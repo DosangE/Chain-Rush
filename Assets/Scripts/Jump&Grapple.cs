@@ -75,11 +75,11 @@ public class Grappling : MonoBehaviour
     void FixedUpdate()
     {
 
-        var v = rb.velocity;
+        var v = rb.linearVelocity;
         // 아래(음수)로 너무 빠르면 잘라내기
         if (v.y < -maxFallSpeed) v.y = -maxFallSpeed;
 
-        rb.velocity = v;
+        rb.linearVelocity = v;
     }
 
     private Vector2 GetAnchorWorld()
@@ -114,7 +114,7 @@ public class Grappling : MonoBehaviour
         if (IsGrounded())
         {
             // 수직속도 리셋 후 점프 (보다 일관된 점프감)
-            rb.velocity = new Vector2(rb.velocity.x, 0f);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
         }
     }
@@ -176,12 +176,12 @@ public class Grappling : MonoBehaviour
         {
             joint2D.distance = Mathf.Max(joint2D.distance - ropeRetractSpeed * Time.deltaTime, minGrappleDistance);
 
-            if (rb && rb.velocity.y < maxLiftSpeed)
+            if (rb && rb.linearVelocity.y < maxLiftSpeed)
             {
                 rb.AddForce(Vector2.up * liftForce, ForceMode2D.Force);
             }
 
-            if (rb) rb.velocity = new Vector2(0f, rb.velocity.y); // 선택적 보정
+            if (rb) rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y); // 선택적 보정
         }
 
         // 라인 갱신(항상 마지막에)
@@ -228,7 +228,7 @@ public class Grappling : MonoBehaviour
 
         float nextDist = Mathf.Min(hookDist + hookSpeed * Time.deltaTime, maxGrappleDistance);
 
-        // ✅ self-hit 방지용 스킨
+        // self-hit 방지용 스킨
         const float skin = 0.05f;
         Vector2 start = origin + dir * skin;
         float rayLen = Mathf.Max(0.001f, nextDist - skin);
