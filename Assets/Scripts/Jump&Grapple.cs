@@ -14,7 +14,7 @@ public class Grappling : MonoBehaviour
 
     [Header("감지 대상 레이어")]
     [SerializeField] private LayerMask grappleLayer;    //  Raycast로 감지할 수 있는 레이어
-    private Vector2 launchDir = new Vector2(0.5f, 0.6f).normalized;   // 줄이 발사되는 방향
+    private Vector2 launchDir = new Vector2(0.5f, 0.7f).normalized;   // 줄이 발사되는 방향
     private bool isHookActive;      // 줄이 발사 중인지 여부
     private bool isLineMax;   // 줄이 최대 길이에 도달했는지 여부
     private bool isAttach;      // 줄이 연결된 상태인지 여부
@@ -59,7 +59,7 @@ public class Grappling : MonoBehaviour
 
     void Update()
     {
-        CheckLineBlocked();   // ✅ 항상 실행
+        CheckLineBlocked();   // 항상 실행
 
         line.SetPosition(0, transform.position);
 
@@ -71,6 +71,7 @@ public class Grappling : MonoBehaviour
         {
             HandleDetachedState();  // 연결되지 않은 상태에서의 처리
         }
+        
     }
     void FixedUpdate()
     {
@@ -105,20 +106,17 @@ public class Grappling : MonoBehaviour
             isGrounded = false;
         }
     }
-    public bool IsGrounded()
-    {
-        return isGrounded;
-    }
+
     void Jump()
     {
-        if (IsGrounded())
+        if (isGrounded)
         {
             // 수직속도 리셋 후 점프 (보다 일관된 점프감)
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
         }
     }
-    private void CheckLineBlocked()
+    private void CheckLineBlocked() // 줄이 장애물에 막혔는지 검사
     {
         Vector2 targetPos;
 
@@ -161,7 +159,7 @@ public class Grappling : MonoBehaviour
         Vector2 anchorPos = GetAnchorWorld();
 
         // 해제 조건
-        if (!Input.GetKey(KeyCode.Mouse0) || IsGrounded() || anchorPos.x < transform.position.x)
+        if (!Input.GetKey(KeyCode.Mouse0) || isGrounded || anchorPos.x < transform.position.x)
         {
             ReleaseGrapple();
             ReturnHook();
@@ -193,14 +191,14 @@ public class Grappling : MonoBehaviour
         // 1) 입력 처리
         if (Input.GetKeyDown(KeyCode.Mouse0) && !isHookActive)
         {
-            if (IsGrounded()) Jump();
+            if (isGrounded) Jump();
             else StartHookShot();
         }
 
         // 2) 훅 이동/상태 갱신
         if (isHookActive && !isAttach)
         {
-            if (isLineMax || IsGrounded()) ReturnHook();
+            if (isLineMax || isGrounded) ReturnHook();
             else ShootHook();
         }
         line.SetPosition(1, hook.position);

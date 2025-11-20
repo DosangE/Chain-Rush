@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class MapMover : MonoBehaviour
 {
-    public enum MoveMode { OneWayLeft, PingPongX }
+    public enum MoveMode { OneWayLeft }
 
     [Header("이동 모드")]
-    public MoveMode mode = MoveMode.PingPongX;
+    public MoveMode mode = MoveMode.OneWayLeft;
 
     [Header("속도/구간")]
-    public float speed = 2f;            // 이동 속도 (유닛/초)
+    public float speed = 10f;            // 이동 속도 (유닛/초)
     public float leftX = -5f;           // PingPong 왼쪽 경계
     public float rightX = 5f;           // PingPong 오른쪽 경계
 
@@ -33,7 +33,6 @@ public class MapMover : MonoBehaviour
             }
             else
             {
-                // 권장: Kinematic
                 rb.bodyType = RigidbodyType2D.Kinematic;
                 rb.gravityScale = 0f;
             }
