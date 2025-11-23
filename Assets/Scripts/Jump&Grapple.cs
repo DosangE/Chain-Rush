@@ -10,11 +10,12 @@ public class Grappling : MonoBehaviour
     [SerializeField] private DistanceJoint2D joint2D;    //  물리적으로 연결을 담당하는 Joint
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] float jumpForce = 15f;
+    private bool isDead = false;
     private bool isGrounded;
 
     [Header("감지 대상 레이어")]
     [SerializeField] private LayerMask grappleLayer;    //  Raycast로 감지할 수 있는 레이어
-    private Vector2 launchDir = new Vector2(0.5f, 0.7f).normalized;   // 줄이 발사되는 방향
+    private Vector2 launchDir = new Vector2(0.5f, 0.6f).normalized;   // 줄이 발사되는 방향
     private bool isHookActive;      // 줄이 발사 중인지 여부
     private bool isLineMax;   // 줄이 최대 길이에 도달했는지 여부
     private bool isAttach;      // 줄이 연결된 상태인지 여부
@@ -38,6 +39,10 @@ public class Grappling : MonoBehaviour
     [SerializeField] private float liftForce = 30f;             // 상승 중 위로 가하는 힘(연속 Force)
     [SerializeField] private float maxLiftSpeed = 10f;           // 상승 중 최고 상승 속도 제한
     [SerializeField] private float freeFallExtra = 5f; // 연결 직후 허용할 추가 여유 길이
+    [SerializeField] private float detachLiftForce = 12f;  // 그래플 해제 순간 위로 튕겨주는 힘
+    private float ropeLockDistance = 0f;
+
+
 
     [Header("낙하 속도 상한")]
     [SerializeField] private float maxFallSpeed = 10f; //
@@ -59,7 +64,7 @@ public class Grappling : MonoBehaviour
 
     void Update()
     {
-        CheckLineBlocked();   // 항상 실행
+        //CheckLineBlocked();   // 항상 실행
 
         line.SetPosition(0, transform.position);
 
@@ -71,7 +76,7 @@ public class Grappling : MonoBehaviour
         {
             HandleDetachedState();  // 연결되지 않은 상태에서의 처리
         }
-        
+
     }
     void FixedUpdate()
     {
@@ -152,39 +157,34 @@ public class Grappling : MonoBehaviour
 
     private void HandleAttachedState()
     {
-        // 방어: 조인트/라인 미할당 시 탈출
         if (!joint2D || !line) return;
         if (!joint2D.enabled) return;
 
         Vector2 anchorPos = GetAnchorWorld();
 
+        bool clickReleased = !Input.GetKey(KeyCode.Mouse0);
+        bool hitGround = isGrounded;
+        bool forceDetach = anchorPos.x < transform.position.x;
+
         // 해제 조건
-        if (!Input.GetKey(KeyCode.Mouse0) || isGrounded || anchorPos.x < transform.position.x)
+        if (hitGround || forceDetach)
         {
+            if (forceDetach)
+                rb.AddForce(Vector2.up * detachLiftForce, ForceMode2D.Impulse);
+
             ReleaseGrapple();
             ReturnHook();
             return;
         }
 
-        // X 고정 전제: Y만 제어
-        float xDist = Mathf.Abs(anchorPos.x - transform.position.x);
-        bool shouldClimb = xDist <= xProximityThreshold;
+        // 🔥 좌클릭 유지 중 → 줄 길이 고정
+        joint2D.maxDistanceOnly = false;  // distance 고정을 허용하도록 설정
+        joint2D.distance = ropeLockDistance;
 
-        if (shouldClimb)
-        {
-            joint2D.distance = Mathf.Max(joint2D.distance - ropeRetractSpeed * Time.deltaTime, minGrappleDistance);
-
-            if (rb && rb.linearVelocity.y < maxLiftSpeed)
-            {
-                rb.AddForce(Vector2.up * liftForce, ForceMode2D.Force);
-            }
-
-            if (rb) rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y); // 선택적 보정
-        }
-
-        // 라인 갱신(항상 마지막에)
+        // 비주얼 업데이트
         line.SetPosition(1, GetVisualAnchor());
     }
+
 
     private void HandleDetachedState()
     {
@@ -235,23 +235,18 @@ public class Grappling : MonoBehaviour
 
         if (hit.collider != null)
         {
-            // (선택) 자기 자신 무시
-            if (hit.collider.gameObject == gameObject)
-                goto NoHit;
-
             float hitDistance = Vector2.Distance(origin, hit.point);
             if (hitDistance < minGrappleDistance)
             {
                 isLineMax = true;
                 return;
             }
-            Debug.Log($"[GrappleHit]");
-            // 연결 직후 설정
+
+            // 정적/동적 앵커 세팅
             joint2D.autoConfigureConnectedAnchor = false;
             joint2D.autoConfigureDistance = false;
             joint2D.enableCollision = true;
 
-            // 정적/동적 공통 앵커 세팅
             if (hit.rigidbody != null)
             {
                 joint2D.connectedBody = hit.rigidbody;
@@ -259,14 +254,15 @@ public class Grappling : MonoBehaviour
             }
             else
             {
-                joint2D.connectedBody = null;      // 월드 앵커
-                joint2D.connectedAnchor = hit.point; // world-space
+                joint2D.connectedBody = null;
+                joint2D.connectedAnchor = hit.point;
             }
 
-            // 🔑 핵심: 느슨하게
-            joint2D.maxDistanceOnly = true; // "최대"만 제한            
-            // 현재 거리보다 '충분히 큰' 값으로 설정 → 아래로 좀 더 떨어질 수 있음
-            joint2D.distance = Mathf.Min(maxGrappleDistance, hitDistance + freeFallExtra);
+            // 🔥 핵심: freeFallExtra 제거하고 정확한 거리로 고정
+            joint2D.distance = hitDistance;
+            ropeLockDistance = hitDistance;
+
+            joint2D.maxDistanceOnly = false;
             joint2D.enabled = true;
 
             isAttach = true;
@@ -274,8 +270,9 @@ public class Grappling : MonoBehaviour
             return;
         }
 
+
     NoHit:
-        // 충돌 없음 → 45°로 계속 연장
+        // 충돌 없음 → 계속 연장
         hookDist = nextDist;
         hook.position = origin + dir * hookDist;
 
@@ -315,5 +312,21 @@ public class Grappling : MonoBehaviour
         Vector2 dirToAnchor = ((Vector2)transform.position - anchorPos);
         if (dirToAnchor.sqrMagnitude < 1e-6f) return anchorPos;
         return anchorPos + dirToAnchor.normalized * (-visualOffset);
+    }
+    public void OnDeath()
+    {
+        isDead = true;
+
+        // 1. 입력 막기(위에서 isDead 체크로 해결)
+        // 2. 그래플 줄 끊기, joint 비활성화 등
+        //    Grappling 스크립트에 public 메서드 만들어 호출해도 됨
+        //    ex) grappling.Detach();
+
+        // 3. 낙하 연출용으로 약간 아래 방향 속도 주기 (선택)
+        rb.linearVelocity = new Vector2(0, 0);
+        rb.gravityScale = 3f; // 평소보다 조금 더 크게 주면 '쭉 떨어지는 느낌'
+
+        // 4. 애니메이션이 있다면:
+        // animator.SetTrigger("Die");
     }
 }

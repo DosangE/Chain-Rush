@@ -10,7 +10,9 @@ public class MapMover : MonoBehaviour
     public MoveMode mode = MoveMode.OneWayLeft;
 
     [Header("속도/구간")]
-    public float speed = 10f;            // 이동 속도 (유닛/초)
+    public float speed = 15f;            // 이동 속도 (유닛/초)
+    private bool isMoving = true;       // 이동 중지 플래그
+
     public float leftX = -5f;           // PingPong 왼쪽 경계
     public float rightX = 5f;           // PingPong 오른쪽 경계
 
@@ -42,12 +44,20 @@ public class MapMover : MonoBehaviour
 
     void Update()
     {
+        // 게임오버면 아예 움직이지 않게
+        if (!isMoving || GameManager.Instance.State != GameState.Playing)
+            return;
         if (!useRigidbody2D) MoveByTransform(Time.deltaTime);
     }
 
     void FixedUpdate()
     {
         if (useRigidbody2D) MoveByRigidbody(Time.fixedDeltaTime);
+    }
+    
+    public void StopMove()
+    {
+        isMoving = false;
     }
 
     void MoveByTransform(float dt)
