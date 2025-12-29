@@ -21,12 +21,7 @@ public class Grappling : MonoBehaviour
     [SerializeField] private float maxGrappleDistance = 7f;
     [SerializeField] private float minGrappleDistance = 1f;
     [SerializeField] private float hookSpeed = 25f;             // 줄 발사 속도(시각용 hook 이동)
-    [SerializeField] private float visualOffset = 0.05f;        // 줄 길이 보정 값
-
-    // 그래플 발사 입력 버퍼(원래 있던 변수들 유지: 현재 미사용)
-    bool queuedGrapple = false;
-    float queuedGrappleUntil = 0f;
-    const float jumpBufferTime = 0.15f;
+    [SerializeField] private float visualOffset = 0.05f;        // (※ 아래에서 라인 끝을 훅과 맞추기 위해 기본은 사용 안 함)
 
     [Header("스윙/상승 설정(현재는 스윙만 사용)")]
     [SerializeField] private float xProximityThreshold = 1.0f;  // (미사용)
@@ -51,10 +46,17 @@ public class Grappling : MonoBehaviour
     [Header("낙하 속도 상한")]
     [SerializeField] private float maxFallSpeed = 15f;
 
+    [Header("Chain End Offset")]
+    [SerializeField] private float chainEndBackOffset = 0.15f; // 훅 쪽에서 체인을 얼마나 짧게 당길지(월드 유닛)
+
+    [Header("Hook Visual")]
+    [SerializeField] private float hookAngleOffset = 0f;    //
+
     // 상태
     private bool isDead = false;
     private bool isGrounded;
 
+    // 줄 발사 각도
     private Vector2 launchDir = new Vector2(0.5f, 0.6f).normalized;
     private bool isHookActive;
     private bool isLineMax;
@@ -76,8 +78,8 @@ public class Grappling : MonoBehaviour
     void Start()
     {
         line.positionCount = 2;
-        line.startWidth = 0.15f;
-        line.endWidth = 0.05f;
+        line.startWidth = 0.3f;
+        line.endWidth = 0.3f;
         line.useWorldSpace = true;
 
         isHookActive = false;
@@ -112,6 +114,7 @@ public class Grappling : MonoBehaviour
 
         ApplyMapSpeedScaling();
 
+        // 라인 시작점
         line.SetPosition(0, transform.position);
 
         if (isAttach && joint2D.enabled)
@@ -122,6 +125,9 @@ public class Grappling : MonoBehaviour
         {
             HandleDetachedState();
         }
+
+        // ⭐ 훅 위치/표시/회전/라인 끝점은 여기서만 책임지게 통일
+        UpdateHookVisual();
     }
 
     void FixedUpdate()
@@ -131,6 +137,74 @@ public class Grappling : MonoBehaviour
         var v = rb.linearVelocity;
         if (v.y < -maxFallSpeed) v.y = -maxFallSpeed;
         rb.linearVelocity = v;
+    }
+
+    private void UpdateHookVisual()
+    {
+        bool shouldShowHook = isHookActive || isAttach;
+
+        if (!shouldShowHook)
+        {
+            if (hook.gameObject.activeSelf)
+                hook.gameObject.SetActive(false);
+            return;
+        }
+
+        if (!hook.gameObject.activeSelf)
+            hook.gameObject.SetActive(true);
+
+        // 1) 훅 위치 결정
+        Vector2 hookPos;
+        if (isAttach && joint2D.enabled)
+        {
+            // 붙은 상태: 앵커(물체가 움직여도 따라감)
+            hookPos = GetAnchorWorld();
+            hook.position = hookPos;
+        }
+        else
+        {
+            // 발사 중: ShootHook()에서 hook.position을 계속 갱신 중
+            hookPos = hook.position;
+        }
+
+        // 2) 라인 끝은 항상 훅 위치로 맞춤(일직선 강제)
+        // 2) 라인 끝은 훅 위치에서 살짝 "뒤로" 당겨서 겹침 방지
+        Vector2 start = transform.position;
+        Vector2 end = hook.position;
+        Vector2 dir = end - start;
+
+        Vector2 lineEnd = end;
+
+        if (dir.sqrMagnitude > 1e-6f)
+        {
+            dir.Normalize();
+
+            // 훅 방향에서 플레이어 쪽으로 당김
+            float back = Mathf.Min(chainEndBackOffset, Vector2.Distance(start, end));
+            lineEnd = end - dir * back;
+        }
+
+        if (line.enabled)
+            line.SetPosition(1, lineEnd);
+
+
+        // 3) 회전: "발사 중"에는 launchDir 기준 / "붙은 상태"에는 플레이어->훅 방향 기준
+
+        if (isHookActive && !isAttach)
+        {
+            // ✅ 발사 각도를 launchDir에 정확히 맞춤
+            dir = launchDir.normalized;
+        }
+        else
+        {
+            // ✅ 붙은 상태는 실제 줄 방향(플레이어 -> 훅)
+            dir = (Vector2)hook.position - (Vector2)transform.position;
+            if (dir.sqrMagnitude > 1e-6f) dir.Normalize();
+            else dir = Vector2.right;
+        }
+
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        hook.rotation = Quaternion.Euler(0f, 0f, angle + hookAngleOffset);
     }
 
     private void ApplyMapSpeedScaling()
@@ -143,7 +217,7 @@ public class Grappling : MonoBehaviour
         rb.gravityScale = baseGravity * Mathf.Pow(speedRatio, 0.60f);
 
         // 그래플 발사(시각/체감 템포)
-        hookSpeed = baseHookSpeed * speedRatio;
+        hookSpeed = baseHookSpeed;
 
         // (현재 스윙만 쓰므로 아래 3개는 안 써도 되지만, 기존 변수 유지 차원에서 남겨둠)
         ropeRetractSpeed = baseRopeRetractSpeed * speedRatio;
@@ -156,15 +230,10 @@ public class Grappling : MonoBehaviour
 
     private float GetGravityAccel()
     {
-        // g의 "크기"(양수)
         float g = -Physics2D.gravity.y * rb.gravityScale;
         return Mathf.Max(0.0001f, g);
     }
 
-    /// <summary>
-    /// 해제 순간 "추가로 더 올라갈 높이"를 보장하는 임펄스 적용.
-    /// 현재 y속도(vy)와 중력(g)을 고려해 필요한 Δv를 계산한다.
-    /// </summary>
     private void ApplyDetachBoostByHeight(float boostHeight)
     {
         if (boostHeight <= 0f) return;
@@ -172,12 +241,9 @@ public class Grappling : MonoBehaviour
         float g = GetGravityAccel();
         float vy = rb.linearVelocity.y;
 
-        // 목표: 현재 상태에서 추가로 boostHeight만큼 더 올라가게 만드는 y속도 증가
-        // vTarget^2 = vy^2 + 2 g h
         float vTarget = Mathf.Sqrt((vy * vy) + 2f * g * boostHeight);
         float deltaVy = vTarget - vy;
 
-        // 이미 충분히 위로 가고 있으면(또는 계산상 음수면) 추가로 줄 필요 없음
         if (deltaVy <= 0f) return;
 
         float impulse = rb.mass * deltaVy;
@@ -219,38 +285,6 @@ public class Grappling : MonoBehaviour
         rb.AddForce(Vector2.up * impulse, ForceMode2D.Impulse);
     }
 
-    private void CheckLineBlocked()
-    {
-        Vector2 targetPos;
-
-        if (isAttach && joint2D.enabled)
-        {
-            targetPos = GetAnchorWorld();
-        }
-        else if (isHookActive)
-        {
-            targetPos = hook.position;
-        }
-        else
-        {
-            return;
-        }
-
-        Vector2 dir = targetPos - (Vector2)transform.position;
-        float distance = dir.magnitude;
-
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, dir.normalized, distance, grappleLayer);
-
-        if (hit.collider != null &&
-            hit.collider.attachedRigidbody != joint2D.connectedBody &&
-            hit.collider.gameObject != gameObject)
-        {
-            Debug.Log($"[LineBlocked]  {hit.collider.name} 끼어듦 → 즉시 해제");
-            ReleaseGrapple();
-            ReturnHook();
-        }
-    }
-
     private void HandleAttachedState()
     {
         if (!joint2D || !line) return;
@@ -265,20 +299,17 @@ public class Grappling : MonoBehaviour
         bool hitGround = isGrounded;
         bool forceDetach = anchorPos.x < transform.position.x;
 
-        // 0) 클릭 놓기: 그냥 해제 (부스트 없음)
         if (clickReleased)
         {
             ReleaseGrapple(); ReturnHook(); return;
         }
 
-        // 1) autoDetach: 부스트 높이 고정 적용
         if (autoDetach)
         {
             ApplyDetachBoostByHeight(autoDetachBoostHeight);
             ReleaseGrapple(); ReturnHook(); return;
         }
 
-        // 2) 기존 해제: forceDetach일 때만(원하면 hitGround도 부스트 줄 수 있음)
         if (hitGround || forceDetach)
         {
             if (forceDetach)
@@ -291,28 +322,26 @@ public class Grappling : MonoBehaviour
         joint2D.maxDistanceOnly = false;
         joint2D.distance = ropeLockDistance;
 
-        // 비주얼 업데이트
-        line.SetPosition(1, GetVisualAnchor());
+        // ✅ 여기서 line.SetPosition(1, GetVisualAnchor()) 하지 않음
+        //    (라인 끝/훅 회전/훅 위치는 UpdateHookVisual()에서 통일 관리)
     }
 
     private void HandleDetachedState()
     {
-        // 입력 처리
         if (Input.GetKeyDown(KeyCode.Mouse0) && !isHookActive)
         {
             if (isGrounded) Jump();
             else StartHookShot();
         }
 
-        // 훅 이동/상태 갱신
         if (isHookActive && !isAttach)
         {
             if (isLineMax || isGrounded) ReturnHook();
             else ShootHook();
         }
 
-        if (line.enabled)
-            line.SetPosition(1, hook.position);
+        // ✅ 여기서 line.SetPosition(1, hook.position) 하지 않음
+        //    (UpdateHookVisual()에서 통일 관리)
     }
 
     private void StartHookShot()
@@ -367,7 +396,6 @@ public class Grappling : MonoBehaviour
                 joint2D.connectedAnchor = hit.point;
             }
 
-            // 연결 직후 줄 길이 고정
             joint2D.distance = hitDistance;
             ropeLockDistance = hitDistance;
 
@@ -375,11 +403,11 @@ public class Grappling : MonoBehaviour
             joint2D.enabled = true;
 
             isAttach = true;
+            isHookActive = false; // ✅ 붙으면 발사 상태 종료
             hook.position = hit.point;
             return;
         }
 
-        // 충돌 없음 → 계속 연장
         hookDist = nextDist;
         hook.position = origin + dir * hookDist;
 
