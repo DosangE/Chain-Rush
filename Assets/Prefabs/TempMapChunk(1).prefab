@@ -143,8 +143,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 100723140188230450}
-  - component: {fileID: 6789421614656531651}
   - component: {fileID: 2651338345350147349}
+  - component: {fileID: -6229458497105745885}
   m_Layer: 0
   m_Name: TempMapChunk(1)
   m_TagString: Untagged
@@ -172,23 +172,6 @@ Transform:
   - {fileID: 4395006701150382611}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6789421614656531651
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 881697438613463466}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd682ae485ff72642bc8cb5bdd552906, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mode: 0
-  speed: 10
-  leftX: -5
-  rightX: 5
-  useRigidbody2D: 1
 --- !u!114 &2651338345350147349
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -203,6 +186,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startPoint: {fileID: 8902710857938575883}
   endPoint: {fileID: 4395006701150382611}
+--- !u!114 &-6229458497105745885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 881697438613463466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd682ae485ff72642bc8cb5bdd552906, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mode: 0
+  useRigidbody2D: 1
 --- !u!1 &1168864950458173927
 GameObject:
   m_ObjectHideFlags: 0

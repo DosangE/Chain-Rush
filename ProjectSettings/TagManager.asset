@@ -2,7 +2,7 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 2
+  serializedVersion: 3
   tags:
   - Ground
   layers:
@@ -12,7 +12,7 @@ TagManager:
   - Grappable
   - Water
   - UI
-  - 
+  - BackGround
   - 
   - 
   - 
@@ -42,3 +42,11 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: BackGround
+    uniqueID: 2473741025
+    locked: 0
+  - name: New Layer 2
+    uniqueID: 1885413495
+    locked: 0
+  m_RenderingLayers:
+  - Default
