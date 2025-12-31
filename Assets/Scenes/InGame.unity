@@ -232,8 +232,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20cf9b7921bd386409cbdc16ba7dcc37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentMapSpeed: 15
-  baseMapSpeed: 15
+  currentMapSpeed: 25
+  baseMapSpeed: 10
   bgs:
   - {fileID: 1826548437}
   - {fileID: 1689253514}
@@ -241,7 +241,7 @@ MonoBehaviour:
   parallax: 0.1
   mapMover: {fileID: 211410386}
   mapPatterns:
-  - {fileID: 4732367734404608031, guid: abdd4b21cc2861c4db411989155de250, type: 3}
+  - {fileID: 9198416098807941746, guid: 1070704301a4e6d47b4b0f4d980afa3f, type: 3}
   maxChunks: 3
   player: {fileID: 302225599}
   spawnDistanceAhead: 15
@@ -274,7 +274,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &219859737
 Transform:
   m_ObjectHideFlags: 0
@@ -485,7 +485,11 @@ GameObject:
   - component: {fileID: 302225599}
   - component: {fileID: 302225598}
   - component: {fileID: 302225597}
-  - component: {fileID: 302225600}
+  - component: {fileID: 302225606}
+  - component: {fileID: 302225605}
+  - component: {fileID: 302225604}
+  - component: {fileID: 302225603}
+  - component: {fileID: 302225602}
   - component: {fileID: 302225596}
   - component: {fileID: 302225601}
   m_Layer: 0
@@ -546,7 +550,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 5
+  m_GravityScale: 5.5
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -622,47 +626,12 @@ Transform:
   m_GameObject: {fileID: 302225595}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.5, y: -3, z: 0}
+  m_LocalPosition: {x: -5.5, y: -3.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &302225600
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 302225595}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c45cc249ac7dc745aa9262c15799c93, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  line: {fileID: 507563338}
-  hook: {fileID: 219859737}
-  joint2D: {fileID: 302225601}
-  rb: {fileID: 302225597}
-  mapManager: {fileID: 211410385}
-  jumpForce: 17.5
-  grappleLayer:
-    serializedVersion: 2
-    m_Bits: 8
-  maxGrappleDistance: 8
-  minGrappleDistance: 1
-  hookSpeed: 38
-  visualOffset: 0.1
-  xProximityThreshold: 1
-  ropeRetractSpeed: 4
-  liftForce: 30
-  maxLiftSpeed: 10
-  freeFallExtra: 5
-  autoDetachDistance: 0.9
-  autoDetachBoostHeight: 2
-  forceDetachBoostHeight: 3
-  maxFallSpeed: 15
-  hookAngleOffset: -90
 --- !u!232 &302225601
 DistanceJoint2D:
   m_ObjectHideFlags: 0
@@ -683,6 +652,97 @@ DistanceJoint2D:
   m_AutoConfigureDistance: 1
   m_Distance: 3
   m_MaxDistanceOnly: 0
+--- !u!114 &302225602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302225595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93d1109d3faee5a449cf04446849f092, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &302225603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302225595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd93b1bee9db7bf418afa33e6b1f73d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &302225604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302225595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4628fcc3ad3663545a06b893f37db7c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &302225605
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302225595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6db324b32e53d04d9fa76fcdaaf9372, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  instantSwingOnAttach: 1
+  attachDistanceShrink: 0.08
+  minTangentialSpeed: 2
+--- !u!114 &302225606
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302225595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acf5e4fa984540440b3124e160f99464, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  line: {fileID: 507563338}
+  hook: {fileID: 219859737}
+  joint2D: {fileID: 302225601}
+  rb: {fileID: 302225597}
+  mapManager: {fileID: 211410385}
+  jumpForce: 17
+  grappleLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  maxGrappleDistance: 8
+  minGrappleDistance: 1
+  hookSpeed: 60
+  visualOffset: 0.05
+  forceDetachBackOffset: 2
+  xProximityThreshold: 1
+  ropeRetractSpeed: 4
+  liftForce: 45
+  maxLiftSpeed: 10
+  freeFallExtra: 10
+  autoDetachDistance: 0.1
+  autoDetachBoostHeight: 2
+  forceDetachBoostHeight: 5
+  leftClickCooldownAfterGrapple: 0.1
+  jumpHeightMultiplier: 0.75
+  jumpGravityMultiplier: 1.6
+  maxFallSpeed: 10
+  chainEndBackOffset: 0.15
+  hookAngleOffset: -90
 --- !u!1 &314154083
 GameObject:
   m_ObjectHideFlags: 0
@@ -1153,7 +1213,7 @@ Transform:
   m_GameObject: {fileID: 612420565}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -4.3, z: 0}
+  m_LocalPosition: {x: 0, y: -5, z: 0}
   m_LocalScale: {x: 19, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
