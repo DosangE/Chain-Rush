@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MapMover : MonoBehaviour
@@ -42,7 +40,9 @@ public class MapMover : MonoBehaviour
 
     void Update()
     {
-        if (!isMoving || GameManager.Instance.State != GameState.Playing)
+        if (!isMoving) return;
+
+        if (GameManager.Instance != null && GameManager.Instance.State != GameState.Playing)
             return;
 
         if (!useRigidbody2D)
@@ -51,6 +51,12 @@ public class MapMover : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!isMoving) return;
+
+        // ✅ Rigidbody 사용 시에도 상태 체크 필요 (재시작/복구 시 안정성)
+        if (GameManager.Instance != null && GameManager.Instance.State != GameState.Playing)
+            return;
+
         if (useRigidbody2D)
             MoveByRigidbody(Time.fixedDeltaTime);
     }
@@ -58,6 +64,7 @@ public class MapMover : MonoBehaviour
     public void StopMove()
     {
         isMoving = false;
+        if (rb != null) rb.linearVelocity = Vector2.zero;
     }
 
     void MoveByTransform(float dt)
@@ -81,7 +88,7 @@ public class MapMover : MonoBehaviour
 
     void MoveByRigidbody(float dt)
     {
-        if (manager == null) return;
+        if (manager == null || rb == null) return;
         float speed = manager.currentMapSpeed;
 
         Vector2 pos = rb.position;

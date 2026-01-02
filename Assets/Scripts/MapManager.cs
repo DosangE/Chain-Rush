@@ -27,32 +27,73 @@ public class MapManager : MonoBehaviour
 
     void Start()
     {
+        // player / mapMover가 인스펙터에서 비어있으면 자동으로 찾아봄 (안전장치)
+        TryResolveRefs();
+
         // 1) 맵 조각 초기화
-        SpawnInitialChunk();
+        if (mapPatterns != null && mapPatterns.Count > 0)
+        {
+            SpawnInitialChunk();
+        }
+        else
+        {
+            Debug.LogError("[MapManager] mapPatterns가 비어있습니다.");
+        }
 
         // 2) 배경 초기화
-        if (bgs[0] == null) return;
+        if (bgs == null || bgs.Length == 0 || bgs[0] == null)
+        {
+            // 배경 없이도 게임 진행 가능하게 early return은 하되, chunk 시스템은 이미 Start에서 진행됨
+            return;
+        }
 
         SpriteRenderer sr = bgs[0].GetComponent<SpriteRenderer>();
+        if (sr == null)
+        {
+            Debug.LogError("[MapManager] bgs[0]에 SpriteRenderer가 없습니다.");
+            return;
+        }
+
         bgWidth = sr.bounds.size.x;
-        
+
         // 틈새 방지 보정
         bgWidth = Mathf.Ceil(bgWidth * 1000f) / 1000f;
-        bgWidth += 0.02f; 
+        bgWidth += 0.02f;
 
-        // 배경들 초기 위치 정렬 및 리스트 추가
+        activeBGs.Clear();
         for (int i = 0; i < bgs.Length; i++)
         {
+            if (bgs[i] == null) continue;
+
             // 첫 번째 배경 기준으로 i번째 배경을 순서대로 배치
             bgs[i].position = bgs[0].position + new Vector3((bgWidth - 0.2f) * i, 0, 0);
             activeBGs.Add(bgs[i]);
         }
 
-        lastMoverX = mapMover.transform.position.x;
+        if (mapMover != null)
+            lastMoverX = mapMover.transform.position.x;
     }
 
     void Update()
     {
+        // ✅ 게임 진행 중이 아니면 MapManager가 player/mapMover를 만지지 않게 막음
+        if (GameManager.Instance != null && GameManager.Instance.State != GameState.Playing)
+            return;
+
+        // ✅ player가 Destroy 되었거나 미할당이면 Update에서 더 이상 접근하지 않음
+        if (player == null)
+        {
+            // 재시작/씬리로드 등으로 player가 새로 생겼을 수도 있으니 한 번 찾아서 복구 시도
+            var p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) player = p.transform;
+
+            if (player == null) return; // 그래도 없으면 종료
+        }
+
+        // ✅ lastEndPoint가 없으면 chunk 시스템 진행 불가 (초기화 실패 보호)
+        if (lastEndPoint == null)
+            return;
+
         // 3) 맵 조각 생성 & 제거 로직
         if (player.position.x + spawnDistanceAhead > lastEndPoint.position.x)
         {
@@ -61,60 +102,111 @@ public class MapManager : MonoBehaviour
         }
 
         // 4) 패럴랙스 이동 로직
-        float currentX = mapMover.transform.position.x;
-        float deltaX = currentX - lastMoverX;
-
-        if (Mathf.Abs(deltaX) > 0.0001f)
+        if (mapMover != null)
         {
-            foreach (Transform bg in activeBGs)
+            float currentX = mapMover.transform.position.x;
+            float deltaX = currentX - lastMoverX;
+
+            if (Mathf.Abs(deltaX) > 0.0001f)
             {
-                bg.position += new Vector3(deltaX * parallax, 0, 0);
+                for (int i = 0; i < activeBGs.Count; i++)
+                {
+                    var bg = activeBGs[i];
+                    if (bg == null) continue;
+                    bg.position += new Vector3(deltaX * parallax, 0, 0);
+                }
             }
+            lastMoverX = currentX;
         }
-        lastMoverX = currentX;
 
         // 5) 무한 배경 순환 로직 (3개 순환)
-        UpdateBackgroundCycling();
+        if (activeBGs.Count > 0 && bgWidth > 0.001f)
+            UpdateBackgroundCycling();
     }
 
     void UpdateBackgroundCycling()
     {
         Camera cam = Camera.main;
+        if (cam == null) return;
+
         float camHalfWidth = cam.orthographicSize * cam.aspect;
         float camLeftX = cam.transform.position.x - camHalfWidth;
 
         // activeBGs[0]은 항상 현재 가장 왼쪽에 있는 배경입니다.
-        if (activeBGs[0].position.x + bgWidth / 2 < camLeftX)
+        if (activeBGs[0] != null && activeBGs[0].position.x + bgWidth / 2 < camLeftX)
         {
             Transform firstBG = activeBGs[0];
-            activeBGs.RemoveAt(0); // 리스트에서 제거
+            activeBGs.RemoveAt(0);
 
             // 현재 가장 마지막 배경(오른쪽 끝)의 뒤에 배치
             Transform lastBG = activeBGs[activeBGs.Count - 1];
-            firstBG.position = lastBG.position + new Vector3(bgWidth - 0.2f, 0, 0);
+            if (lastBG != null && firstBG != null)
+                firstBG.position = lastBG.position + new Vector3(bgWidth - 0.2f, 0, 0);
 
-            activeBGs.Add(firstBG); // 리스트의 맨 뒤로 추가
+            activeBGs.Add(firstBG);
         }
     }
 
-    // --- 기존 맵 생성 시스템 (수정 없음) ---
+    // --- 기존 맵 생성 시스템 (기능 유지 + 방어만 추가) ---
     void SpawnInitialChunk()
     {
+        if (mapPatterns == null || mapPatterns.Count == 0) return;
+
         GameObject prefab = mapPatterns[0];
+        if (prefab == null) return;
+
         GameObject chunk = Instantiate(prefab, Vector3.zero, Quaternion.identity);
+
+        // ✅ 초기 청크도 갭 보정 적용
+        var gapScaler = chunk.GetComponent<MapChunkGapScaler>();
+        if (gapScaler != null)
+        {
+            gapScaler.Apply(currentMapSpeed);
+        }
+
         MapPattern pattern = chunk.GetComponent<MapPattern>();
+        if (pattern == null || pattern.endPoint == null)
+        {
+            Debug.LogError("[MapManager] MapPattern 또는 endPoint가 없습니다. 프리팹 확인 필요.");
+            Destroy(chunk);
+            return;
+        }
+
         lastEndPoint = pattern.endPoint;
         chunks.Enqueue(chunk);
     }
 
+
     void SpawnNextChunk()
     {
+        if (mapPatterns == null || mapPatterns.Count == 0) return;
+        if (lastEndPoint == null) return;
+
         int index = Random.Range(0, mapPatterns.Count);
         GameObject prefab = mapPatterns[index];
+        if (prefab == null) return;
+
         GameObject chunk = Instantiate(prefab);
+
+        var gapScaler = chunk.GetComponent<MapChunkGapScaler>();
+        if (gapScaler != null)
+        {
+            // ✅ 프리팹 로컬 좌표 상태에서 먼저 갭 보정
+            gapScaler.Apply(currentMapSpeed);
+        }
+
         MapPattern pattern = chunk.GetComponent<MapPattern>();
-        Vector3 offset = chunk.transform.position - pattern.startPoint.position;
-        chunk.transform.position = lastEndPoint.position + offset;
+        if (pattern == null || pattern.startPoint == null || pattern.endPoint == null)
+        {
+            Destroy(chunk);
+            return;
+        }
+
+        // ✅ 갭 보정이 끝난 startPoint 기준으로 접합
+        Vector3 startLocal = pattern.startPoint.localPosition;
+        chunk.transform.position = lastEndPoint.position - startLocal;
+
+        // ✅ 이제 endPoint는 완성된 상태
         lastEndPoint = pattern.endPoint;
         chunks.Enqueue(chunk);
     }
@@ -124,7 +216,19 @@ public class MapManager : MonoBehaviour
         while (chunks.Count > maxChunks)
         {
             var old = chunks.Dequeue();
-            Destroy(old);
+            if (old != null) Destroy(old);
         }
+    }
+
+    private void TryResolveRefs()
+    {
+        if (player == null)
+        {
+            var p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) player = p.transform;
+        }
+
+        if (mapMover == null)
+            mapMover = FindObjectOfType<MapMover>();
     }
 }

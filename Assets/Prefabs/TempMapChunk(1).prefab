@@ -44,6 +44,7 @@ GameObject:
   - component: {fileID: 100723140188230450}
   - component: {fileID: 2651338345350147349}
   - component: {fileID: -6229458497105745885}
+  - component: {fileID: 7421258177235504825}
   m_Layer: 0
   m_Name: TempMapChunk(1)
   m_TagString: Untagged
@@ -98,6 +99,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mode: 0
   useRigidbody2D: 1
+--- !u!114 &7421258177235504825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 881697438613463466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93eee95261f4d8c46ae5e3a2a20603eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  groundRoot: {fileID: 1181549383857760285}
+  loofRoot: {fileID: 8151333422675235268}
+  startPoint: {fileID: 8902710857938575883}
+  endPoint: {fileID: 4395006701150382611}
+  gapEpsilon: 0.02
+  baseSpeed: 15
+  addPerGap_Speed20: 5
+  addPerGap_Speed25: 10
+  preferColliderBounds: 1
 --- !u!1 &1342099492682536013
 GameObject:
   m_ObjectHideFlags: 0
@@ -111,7 +133,7 @@ GameObject:
   - component: {fileID: 3245883512153494112}
   - component: {fileID: 3788669902081503536}
   m_Layer: 3
-  m_Name: Single (4)
+  m_Name: loof1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -126,7 +148,7 @@ Transform:
   m_GameObject: {fileID: 1342099492682536013}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.0000003874302, y: 0, z: 0}
+  m_LocalPosition: {x: -0.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -383,7 +405,7 @@ GameObject:
   - component: {fileID: 8931201032717295552}
   - component: {fileID: 2813571276751931616}
   m_Layer: 0
-  m_Name: Single (3)
+  m_Name: ground2
   m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -517,7 +539,7 @@ GameObject:
   - component: {fileID: 5121632544541955707}
   - component: {fileID: 34140008315162483}
   m_Layer: 0
-  m_Name: Single
+  m_Name: ground1
   m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

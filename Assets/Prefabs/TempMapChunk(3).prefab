@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2490864576738280684}
   m_Layer: 0
-  m_Name: Ground (2)
+  m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -43,7 +43,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9062347307970724246}
   m_Layer: 3
-  m_Name: Loof (1)
+  m_Name: Loof
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -58,7 +58,7 @@ Transform:
   m_GameObject: {fileID: 1754146214944315600}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 10, y: 4.5, z: 0}
+  m_LocalPosition: {x: 0, y: 4.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -91,7 +91,7 @@ Transform:
   m_GameObject: {fileID: 2112795000726721189}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -11.5, y: 0, z: 0}
+  m_LocalPosition: {x: -12, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -110,7 +110,7 @@ GameObject:
   - component: {fileID: 3581669492859511133}
   - component: {fileID: 4399394847997897549}
   m_Layer: 3
-  m_Name: Single (3)
+  m_Name: loof1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -125,7 +125,7 @@ Transform:
   m_GameObject: {fileID: 2122864508995140064}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.5, y: 0, z: 0}
+  m_LocalPosition: {x: 13, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -383,7 +383,7 @@ GameObject:
   - component: {fileID: 970946583841096171}
   - component: {fileID: 8675055008757061054}
   m_Layer: 3
-  m_Name: Single (4)
+  m_Name: loof2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -398,7 +398,7 @@ Transform:
   m_GameObject: {fileID: 3572055297754371704}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 20.4, y: 0, z: 0}
+  m_LocalPosition: {x: 28, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -686,7 +686,7 @@ GameObject:
   - component: {fileID: 581922077378781092}
   - component: {fileID: 7196336248620645063}
   m_Layer: 0
-  m_Name: Single
+  m_Name: ground1
   m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -701,7 +701,7 @@ Transform:
   m_GameObject: {fileID: 5682883399071045908}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.5, y: -4.3, z: 0}
+  m_LocalPosition: {x: -5, y: -4.3, z: 0}
   m_LocalScale: {x: 1.5, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -820,7 +820,7 @@ GameObject:
   - component: {fileID: 1711099733355959751}
   - component: {fileID: 5183195014744114772}
   m_Layer: 0
-  m_Name: Single (3)
+  m_Name: ground2
   m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -835,7 +835,7 @@ Transform:
   m_GameObject: {fileID: 6233675141566104720}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 48.1, y: -4.3, z: 0}
+  m_LocalPosition: {x: 48, y: -4.3, z: 0}
   m_LocalScale: {x: 1.5, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -953,6 +953,7 @@ GameObject:
   - component: {fileID: 2871094596562377555}
   - component: {fileID: 6518362912248805783}
   - component: {fileID: -6555788813518334728}
+  - component: {fileID: 3366743398138084535}
   m_Layer: 0
   m_Name: TempMapChunk(3)
   m_TagString: Untagged
@@ -1007,3 +1008,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mode: 0
   useRigidbody2D: 1
+--- !u!114 &3366743398138084535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9198416098807941746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93eee95261f4d8c46ae5e3a2a20603eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  groundRoot: {fileID: 2490864576738280684}
+  loofRoot: {fileID: 9062347307970724246}
+  startPoint: {fileID: 4024154490742871695}
+  endPoint: {fileID: 7037747809885899020}
+  gapEpsilon: 0.02
+  baseSpeed: 15
+  addPerGap_Speed20: 5
+  addPerGap_Speed25: 10
+  preferColliderBounds: 1
