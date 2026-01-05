@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 
 public class Grappling : MonoBehaviour
@@ -54,7 +53,6 @@ public class Grappling : MonoBehaviour
 
     [SerializeField] public float jumpGravityMultiplier = 1.25f;
     public float JumpGravityMultiplier => jumpGravityMultiplier;
-
 
     [Header("낙하 속도 상한")]
     [SerializeField] private float maxFallSpeed = 15f;
@@ -195,6 +193,10 @@ public class Grappling : MonoBehaviour
     void Update()
     {
         if (isDead) return;
+        if (PlayerActionLock.IsLocked)
+        {
+            return;
+        }
 
         if (leftClickCooldownTimer > 0f)
         {
@@ -254,7 +256,7 @@ public class Grappling : MonoBehaviour
 
         bool hitGround = isGrounded;
 
-        // 🔑 앵커가 플레이어보다 "조금 더 뒤"에 갔을 때 해제
+        // 앵커가 플레이어보다 "조금 더 뒤"에 갔을 때 해제
         bool forceDetach = anchorPos.x < (transform.position.x - forceDetachBackOffset);
 
         if (hitGround || forceDetach)
@@ -270,21 +272,17 @@ public class Grappling : MonoBehaviour
             return;
         }
 
-        // ===============================
         // 좌클릭 상태에 따른 장력 제어
-        // ===============================
         bool holdingMouse = Input.GetKey(KeyCode.Mouse0);
 
         if (holdingMouse)
         {
-            // 장력 고정
             joint2D.maxDistanceOnly = false;
             joint2D.distance = ropeLockDistance;
             isTensionHolding = true;
         }
         else
         {
-            // 장력 해제 (자연 늘어짐)
             if (isTensionHolding)
             {
                 joint2D.distance = distToAnchor;
@@ -294,6 +292,7 @@ public class Grappling : MonoBehaviour
             joint2D.maxDistanceOnly = false;
         }
     }
+
     private void HandleDetachedState()
     {
         bool canUseLeftClickForGrapple = (leftClickCooldownTimer <= 0f);
@@ -309,7 +308,7 @@ public class Grappling : MonoBehaviour
                 if (canUseLeftClickForGrapple)
                     StartHookShot();
                 else
-                    UnityEngine.Debug.Log("Grapple CoolTime!");
+                    Debug.Log("Grapple CoolTime!");
             }
         }
 
@@ -326,6 +325,13 @@ public class Grappling : MonoBehaviour
 
         rb.linearVelocity = new Vector2(0, 0);
         rb.gravityScale = 3f;
+
+        ReleaseGrapple();
+    }
+
+    public void ForceDetachForAttack()
+    {
+        isTensionHolding = false;
 
         ReleaseGrapple();
     }
