@@ -68,6 +68,12 @@ public class GameManager : MonoBehaviour
         if (pausePopupUI != null) pausePopupUI.SetActive(false);
         if (gameOverUI != null) gameOverUI.SetActive(false);
     }
+    
+    public void SetGameOver()
+    {
+        State = GameState.GameOver;
+    }
+
 
     public void GameOver()
     {

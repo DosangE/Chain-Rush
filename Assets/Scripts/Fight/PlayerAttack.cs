@@ -14,7 +14,7 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private Collider2D playerCollider;
 
     [Header("Attack Targeting")]
-    [SerializeField] private LayerMask attackableMask;   // Enemy/Obstacle 레이어 포함
+    [SerializeField] private LayerMask attackableMask;   // Enemy/Obstacle/Boss 레이어 포함
     [Tooltip("마우스가 콜라이더 위에 있을 때만 공격. 커서 판정 여유(월드 단위). 0이면 딱 찍어야 함.")]
     [SerializeField] private float cursorHitRadius = 0f; // 0이면 OverlapPoint, >0이면 OverlapCircle로 여유
 
@@ -56,6 +56,10 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private bool showHookDuringAttack = true;
     [SerializeField] private float attackHookAngleOffset = 0f;
 
+    [Header("Boss Attack Rules")]
+    [Tooltip("보스 QTE 중이거나 쿨타임이면, 보스 공격 시도 자체를 막음(보스만).")]
+    [SerializeField] private bool blockBossAttackDuringCooldownOrQTE = true;
+
     private bool isAttacking;
     private float nextAttackAllowedTime;
 
@@ -84,6 +88,7 @@ public class PlayerAttack : MonoBehaviour
 
     private void Update()
     {
+        // QTE/공격 진행 중에는 잠금 -> 추가 공격 불가 (네 요구사항)
         if (PlayerActionLock.IsLocked) return;
 
         if (Input.GetKeyDown(KeyCode.Space))
@@ -125,85 +130,181 @@ public class PlayerAttack : MonoBehaviour
             yield break;
         }
 
-        // ===== 1) 맞았을 때만 공격 시작 =====
+        // ===== 0.5) Boss 타겟 분기 =====
+        Boss boss = hitCol.GetComponentInParent<Boss>();
+        if (boss != null)
+        {
+            // ✅ 쿨타임/QTE 중이면 "보스 공격 시도" 자체를 막음 (보스만)
+            if (blockBossAttackDuringCooldownOrQTE)
+            {
+                if (boss.IsInQTE || !boss.CanStartAttempt)
+                    yield break;
+            }
+
+            // ✅ 여기부터는 "보스 정상 공격" = 타겟에 붙어서 QTE 진행
+            isAttacking = true;
+            PlayerActionLock.Lock();
+
+            // 공격 시작 시 그래플 강제 해제
+            if (grappling != null)
+                grappling.ForceDetachForAttack();
+
+            // 붙는 지점(보스 중앙 + 오프셋)
+            Vector2 bossPoint = (Vector2)boss.transform.position;
+            bossPoint.x += enemyTargetOffsetX;
+
+            // 복귀용 X 저장
+            float startX = transform.position.x;
+
+            // 공격 중 물리/충돌 정지
+            bool prevSimulated = true;
+            bool prevColliderEnabled = true;
+
+            if (playerRb != null)
+            {
+                prevSimulated = playerRb.simulated;
+                playerRb.linearVelocity = Vector2.zero;
+                playerRb.angularVelocity = 0f;
+                playerRb.simulated = false;
+            }
+
+            if (playerCollider != null)
+            {
+                prevColliderEnabled = playerCollider.enabled;
+                playerCollider.enabled = false;
+            }
+
+            // 훅/체인 ON + 발사 연출
+            AttackHookOn();
+            yield return ChainShootVisual(bossPoint, chainShootDuration);
+
+            // ✅ 보스에게 "붙기"
+            Vector3 from = transform.position;
+            yield return MovePlayerKeepingChain(from, bossPoint, flyOutDuration, bossPoint);
+
+            // ✅ 여기서 QTE 시작 (보스가 쿨타임 갱신도 처리)
+            bool started = boss.TryStartAttackAttempt();
+            if (!started)
+            {
+                // 경합/상태변화로 시작 실패면 그냥 종료/복귀
+                AttackHookOff();
+                ChainOff();
+            }
+            else
+            {
+                // ✅ QTE 끝날 때까지 "붙어있는 상태" 유지
+                while (boss.IsInQTE)
+                {
+                    // 체인 시각 유지
+                    if (chainLine != null && chainLine.enabled)
+                    {
+                        Vector2 o = (Vector2)chainOrigin.position;
+                        chainLine.SetPosition(0, o);
+                        chainLine.SetPosition(1, bossPoint);
+                        UpdateAttackHookVisual(o, bossPoint);
+                    }
+                    yield return null;
+                }
+            }
+
+            // 보스 QTE 종료 후: 체인/훅 OFF
+            AttackHookOff();
+            ChainOff();
+
+            // ✅ 보스 공격 끝나면 복귀(벽차기 arc)
+            Vector2 returnPoint = new Vector2(startX, returnYWorld);
+
+            if (returnDuration <= 0f)
+            {
+                transform.position = returnPoint;
+            }
+            else
+            {
+                yield return MovePlayerArcKeepingChain(transform.position, returnPoint, returnDuration, returnArcHeight, bossPoint);
+            }
+
+            // 물리/충돌 복구 + 속도 적용
+            if (playerCollider != null)
+                playerCollider.enabled = prevColliderEnabled;
+
+            if (playerRb != null)
+            {
+                playerRb.simulated = prevSimulated;
+                playerRb.linearVelocity = postReturnVelocity;
+                playerRb.angularVelocity = 0f;
+            }
+
+            PlayerActionLock.Unlock();
+            isAttacking = false;
+            yield break;
+        }
+
+        // ===== 1) (기존) Enemy/Obstacle 공격 =====
         isAttacking = true;
         PlayerActionLock.Lock();
 
-        // 2) 공격 시작 시 그래플 강제 해제
         if (grappling != null)
             grappling.ForceDetachForAttack();
 
-        // 3) 붙는 지점: Enemy 중앙(우선) / 아니면 콜라이더 트랜스폼
         Enemy enemy = hitCol.GetComponentInParent<Enemy>();
         Vector2 targetPoint = (enemy != null) ? (Vector2)enemy.transform.position : (Vector2)hitCol.transform.position;
         targetPoint.x += enemyTargetOffsetX;
 
-        // 4) "복귀용 X" 저장 (점프/그래플 상태 복구는 하지 않음)
-        float startX = transform.position.x;
+        float startX2 = transform.position.x;
 
-        // 5) 공격 중 물리/충돌 정지 (연출 안정화)
-        bool prevSimulated = true;
+        bool prevSimulated2 = true;
         if (playerRb != null)
         {
-            prevSimulated = playerRb.simulated;
+            prevSimulated2 = playerRb.simulated;
             playerRb.linearVelocity = Vector2.zero;
             playerRb.angularVelocity = 0f;
             playerRb.simulated = false;
         }
 
-        bool prevColliderEnabled = true;
+        bool prevColliderEnabled2 = true;
         if (playerCollider != null)
         {
-            prevColliderEnabled = playerCollider.enabled;
+            prevColliderEnabled2 = playerCollider.enabled;
             playerCollider.enabled = false;
         }
 
-        // 6) 훅/체인 ON + 발사 연출
         AttackHookOn();
         yield return ChainShootVisual(targetPoint, chainShootDuration);
 
-        // 7) 플레이어가 타겟으로 이동
-        Vector3 from = transform.position;
-        yield return MovePlayerKeepingChain(from, targetPoint, flyOutDuration, targetPoint);
+        Vector3 from2 = transform.position;
+        yield return MovePlayerKeepingChain(from2, targetPoint, flyOutDuration, targetPoint);
 
-        // 8) 파괴
         if (enemy != null) enemy.OnHitByAttack();
         else Destroy(hitCol.gameObject);
 
         AttackHookOff();
         ChainOff();
 
-        // 9) 슬로모
         if (useHitSlowMo)
             yield return HitSlowMo(hitTimeScale, hitSlowMoDurationRealtime);
 
-        // 10) 홀드
         yield return HoldWithChain(targetPoint, hitHoldDuration);
 
-        // ===== 11) 공격 종료 후: 무조건 (startX, returnYWorld)로 "호(arc)" 복귀 =====
-        Vector2 returnPoint = new Vector2(startX, returnYWorld);
+        Vector2 returnPoint2 = new Vector2(startX2, returnYWorld);
 
         if (returnDuration <= 0f)
         {
-            transform.position = returnPoint;
+            transform.position = returnPoint2;
         }
         else
         {
-            // ★여기서 "호"로 이동
-            yield return MovePlayerArcKeepingChain(transform.position, returnPoint, returnDuration, returnArcHeight, targetPoint);
+            yield return MovePlayerArcKeepingChain(transform.position, returnPoint2, returnDuration, returnArcHeight, targetPoint);
         }
 
-        // 12) 체인/훅 OFF
         ChainOff();
         AttackHookOff();
 
-        // 13) 물리/충돌 복구 + "복귀 후 속도" 적용(점프 이어가기 제거)
         if (playerCollider != null)
-            playerCollider.enabled = prevColliderEnabled;
+            playerCollider.enabled = prevColliderEnabled2;
 
         if (playerRb != null)
         {
-            playerRb.simulated = prevSimulated;
+            playerRb.simulated = prevSimulated2;
             playerRb.linearVelocity = postReturnVelocity;
             playerRb.angularVelocity = 0f;
         }
@@ -274,7 +375,6 @@ public class PlayerAttack : MonoBehaviour
         }
     }
 
-    // ★추가: 복귀를 "호(arc)"로 이동
     private IEnumerator MovePlayerArcKeepingChain(Vector3 from, Vector3 to, float duration, float arcHeight, Vector2 chainEnd)
     {
         float t = 0f;
@@ -288,17 +388,14 @@ public class PlayerAttack : MonoBehaviour
             float u = (duration <= 0f) ? 1f : Mathf.Clamp01(t / duration);
             float eased = (flyEase != null) ? flyEase.Evaluate(u) : u;
 
-            // 기본 직선 보간
             Vector2 basePos = Vector2.Lerp(aFrom, aTo, eased);
 
-            // 포물선 오프셋: 0->1에서 중간이 최대가 되도록(4t(1-t))
             float parabola = 4f * eased * (1f - eased);
             Vector2 arcOffset = Vector2.up * (arcHeight * parabola);
 
             Vector2 finalPos = basePos + arcOffset;
             transform.position = finalPos;
 
-            // 체인/훅은 타겟에 계속 붙게(원래 코드 유지)
             if (chainLine != null && chainLine.enabled)
             {
                 Vector2 o = (Vector2)chainOrigin.position;
@@ -360,7 +457,6 @@ public class PlayerAttack : MonoBehaviour
         Time.fixedDeltaTime = prevFixed;
     }
 
-    // ===== 공격용 훅 비주얼 =====
     private void AttackHookOn()
     {
         if (!showHookDuringAttack) return;

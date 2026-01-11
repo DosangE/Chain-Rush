@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Transactions;
 using UnityEngine;
 
 public class MapManager : MonoBehaviour
@@ -24,6 +25,33 @@ public class MapManager : MonoBehaviour
 
     private Queue<GameObject> chunks = new Queue<GameObject>();
     private Transform lastEndPoint;
+
+    // =========================
+    // Boss Spawn
+    // =========================
+    [Header("Boss Spawn")]
+    [SerializeField] private GameObject bossPrefab;
+    [SerializeField] private Transform bossPos;
+    
+    [Tooltip("누적 청크 스폰 수(초기 청크 포함)가 이 값에 도달하면 보스 1회 소환")]
+    [SerializeField] private int chunksBeforeBoss = 10;
+
+    [Tooltip("플레이어 기준 보스 등장 위치 오프셋(월드). 플레이어 X 고정 기준 화면에 보이게 +X 권장")]
+    [SerializeField] private Vector2 bossSpawnOffsetFromPlayer = new Vector2(8f, 0f);
+
+    [Tooltip("보스 출현 1개 전부터(=chunksBeforeBoss-1번째 청크부터) 평지(0번) 강제")]
+    [SerializeField] private bool forceFlatOneChunkBeforeBoss = true;
+
+    [Tooltip("보스가 살아있는 동안 평지(0번) 강제")]
+    [SerializeField] private bool forceFlatPatternWhileBossAlive = true;
+
+    [Header("Debug")]
+    [SerializeField] private bool debugBossAndChunk = false;
+
+    private int spawnedChunkCount = 0;   // 초기 청크 포함 누적 스폰 수
+    private bool bossSpawned = false;    // 보스 1회 소환 여부
+    private GameObject spawnedBossObj = null; // 보스 오브젝트 참조(컴포넌트 null 문제 대비)
+    private Boss spawnedBoss = null;     // 보스 컴포넌트 참조(있으면 PlayerAttack 등과 연계)
 
     void Start()
     {
@@ -95,6 +123,7 @@ public class MapManager : MonoBehaviour
             return;
 
         // 3) 맵 조각 생성 & 제거 로직
+        // 플레이어 X 고정 + 맵 이동 구조에서는 endPoint가 왼쪽으로 밀리면서 조건을 만족하게 됨.
         if (player.position.x + spawnDistanceAhead > lastEndPoint.position.x)
         {
             SpawnNextChunk();
@@ -174,15 +203,18 @@ public class MapManager : MonoBehaviour
 
         lastEndPoint = pattern.endPoint;
         chunks.Enqueue(chunk);
-    }
 
+        // ✅ 초기 청크 포함 누적 카운트
+        spawnedChunkCount++;
+        TrySpawnBossIfReady();
+    }
 
     void SpawnNextChunk()
     {
         if (mapPatterns == null || mapPatterns.Count == 0) return;
         if (lastEndPoint == null) return;
 
-        int index = Random.Range(0, mapPatterns.Count);
+        int index = DecideNextPatternIndex();
         GameObject prefab = mapPatterns[index];
         if (prefab == null) return;
 
@@ -209,6 +241,38 @@ public class MapManager : MonoBehaviour
         // ✅ 이제 endPoint는 완성된 상태
         lastEndPoint = pattern.endPoint;
         chunks.Enqueue(chunk);
+
+        // ✅ 누적 카운트 + 보스 스폰 체크
+        spawnedChunkCount++;
+        TrySpawnBossIfReady();
+
+        if (debugBossAndChunk)
+        {
+            Debug.Log($"[MapManager] SpawnedChunkCount={spawnedChunkCount}, BossSpawned={bossSpawned}, BossAlive={IsBossAlive()}, PatternIndex={index}");
+        }
+    }
+
+    private int DecideNextPatternIndex()
+    {
+        // 다음에 스폰될 청크 번호(초기 청크 포함 누적 기준)
+        int nextChunkNumber = spawnedChunkCount + 1;
+
+        bool bossAlive = IsBossAlive();
+
+        // 1) 보스가 살아있는 동안: 평지 강제
+        if (forceFlatPatternWhileBossAlive && bossAlive)
+            return 0;
+
+        // 2) 보스 출현 1개 전부터: 평지 강제 (보스 아직 소환 안 된 상태에서만)
+        if (forceFlatOneChunkBeforeBoss && !bossSpawned)
+        {
+            // chunksBeforeBoss=10이면 nextChunkNumber가 9 이상이면 평지로 바뀜
+            if (chunksBeforeBoss >= 2 && nextChunkNumber >= chunksBeforeBoss - 1)
+                return 0;
+        }
+
+        // 3) 그 외엔 랜덤
+        return Random.Range(0, mapPatterns.Count);
     }
 
     void RemoveOldChunk()
@@ -230,5 +294,60 @@ public class MapManager : MonoBehaviour
 
         if (mapMover == null)
             mapMover = FindObjectOfType<MapMover>();
+    }
+
+    // =========================
+    // Boss spawn helper
+    // =========================
+    private void TrySpawnBossIfReady()
+    {
+        if (bossSpawned) return;
+        if (bossPrefab == null) return;
+        if (spawnedChunkCount < chunksBeforeBoss) return;
+
+        SpawnBoss();
+    }
+
+    private void SpawnBoss()
+    {
+        if (bossSpawned) return;
+        bossSpawned = true;
+
+        if (player == null)
+        {
+            Debug.LogError("[MapManager] player가 없어 보스를 소환할 수 없습니다.");
+            return;
+        }
+
+        Vector3 spawnPos = bossPos.position;
+
+        // ✅ 부모 null 강제 -> MapMover(맵 루트) 영향에서 완전히 분리
+        GameObject bossObj = Instantiate(bossPrefab, spawnPos, Quaternion.identity, null);
+
+        spawnedBossObj = bossObj;
+
+        // ✅ 루트/자식 어디에 Boss가 있든 찾기
+        spawnedBoss = bossObj.GetComponent<Boss>();
+        if (spawnedBoss == null)
+            spawnedBoss = bossObj.GetComponentInChildren<Boss>(true);
+
+        if (spawnedBoss == null)
+        {
+            Debug.LogWarning("[MapManager] Boss Prefab(또는 자식)에 Boss 컴포넌트가 없습니다. "
+                + "PlayerAttack의 보스 공격 분기(GetComponentInParent<Boss>)도 실패할 수 있습니다.");
+        }
+
+        if (debugBossAndChunk)
+        {
+            Debug.Log($"[MapManager] Boss Spawned at {spawnPos}. BossCompFound={(spawnedBoss != null)}");
+        }
+    }
+
+    private bool IsBossAlive()
+    {
+        // Unity Destroy 특성상 파괴되면 == null로 판정됨
+        if (spawnedBossObj != null) return true;
+        if (spawnedBoss != null) return true;
+        return false;
     }
 }
