@@ -89,7 +89,8 @@ public class PlayerAttack : MonoBehaviour
     private void Update()
     {
         if (PlayerActionLock.IsLocked) return;
-
+        if (GameManager.Instance != null && GameManager.Instance.IsInputLocked)
+            return;
         if (Input.GetKeyDown(KeyCode.Space))
             TryAttack();
     }

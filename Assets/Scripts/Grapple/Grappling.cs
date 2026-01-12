@@ -197,6 +197,8 @@ public class Grappling : MonoBehaviour
         {
             return;
         }
+        if (GameManager.Instance != null && GameManager.Instance.IsInputLocked)
+            return;
 
         if (leftClickCooldownTimer > 0f)
         {
