@@ -47,9 +47,6 @@ public class Boss : MonoBehaviour
         return true;
     }
 
-    /// <summary>
-    /// ✅ 보스 공격 "마무리 시점"에 쿨타임 시작 (PlayerAttack이 호출)
-    /// </summary>
     public void StartCooldownNow()
     {
         _nextAttackTime = Time.time + attackCooldown;
@@ -74,9 +71,17 @@ public class Boss : MonoBehaviour
         }
         else
         {
-            // 실패 즉사
-            if (GameManager.Instance != null)
-                gm.GameOver();
+            // Boss.cs 내부 QTE 실패 처리 부분에서
+            var ph = FindObjectOfType<PlayerHealth>();
+            if (ph != null)
+            {
+                ph.TakeDamage(1);
+                if (ph.CurrentHp <= 0)
+                {
+                    if (GameManager.Instance != null)
+                        GameManager.Instance.GameOver();
+                }
+            }
             else
                 Debug.LogError("[Boss] GameManager.Instance is null. Cannot set GameOver.");
         }

@@ -442,7 +442,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3670661171036656003}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: Loof
   m_TagString: Untagged
   m_Icon: {fileID: 0}

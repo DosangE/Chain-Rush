@@ -177,7 +177,7 @@ GameObject:
   - component: {fileID: 5071758327173553236}
   - component: {fileID: 177220029291372364}
   - component: {fileID: 8121431995606218179}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: loof1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -538,7 +538,7 @@ GameObject:
   - component: {fileID: 4302349546864449555}
   - component: {fileID: 8266070403659452153}
   - component: {fileID: 1029497330823091845}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: loof2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1142,7 +1142,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9158313401967922898}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: Loof
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 4502128803411758261}
   - component: {fileID: 3245883512153494112}
   - component: {fileID: 3788669902081503536}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: loof1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -734,7 +734,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8151333422675235268}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: Loof
   m_TagString: Untagged
   m_Icon: {fileID: 0}
