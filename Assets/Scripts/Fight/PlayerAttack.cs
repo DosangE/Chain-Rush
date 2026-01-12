@@ -14,12 +14,12 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private Collider2D playerCollider;
 
     [Header("Attack Targeting")]
-    [SerializeField] private LayerMask attackableMask;   // Enemy/Obstacle/Boss 레이어 포함
+    [SerializeField] private LayerMask attackableMask;
     [Tooltip("마우스가 콜라이더 위에 있을 때만 공격. 커서 판정 여유(월드 단위). 0이면 딱 찍어야 함.")]
-    [SerializeField] private float cursorHitRadius = 0f; // 0이면 OverlapPoint, >0이면 OverlapCircle로 여유
+    [SerializeField] private float cursorHitRadius = 0f;
 
     [Header("Target Offset")]
-    [SerializeField] private float enemyTargetOffsetX = -2f; // +면 오른쪽, -면 왼쪽
+    [SerializeField] private float enemyTargetOffsetX = -2f;
 
     [Header("Fly To Target (Player Moves)")]
     [SerializeField] private float flyOutDuration = 0.10f;
@@ -41,7 +41,7 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float chainShootDuration = 0.06f;
 
     [Header("Cooldown")]
-    [SerializeField] private float missCooldown = 0.5f; // 필요하면 미스에도 쿨타임
+    [SerializeField] private float missCooldown = 0.5f;
 
     [Header("Hit Emphasis (Slow Motion)")]
     [SerializeField] private bool useHitSlowMo = true;
@@ -88,7 +88,6 @@ public class PlayerAttack : MonoBehaviour
 
     private void Update()
     {
-        // QTE/공격 진행 중에는 잠금 -> 추가 공격 불가 (네 요구사항)
         if (PlayerActionLock.IsLocked) return;
 
         if (Input.GetKeyDown(KeyCode.Space))
@@ -105,7 +104,6 @@ public class PlayerAttack : MonoBehaviour
 
     private IEnumerator AttackRoutine()
     {
-        // ===== 0) 마우스가 "콜라이더 안"에 있을 때만 공격 =====
         Vector2 origin = (Vector2)chainOrigin.position;
 
         Vector3 mp = Input.mousePosition;
@@ -122,7 +120,6 @@ public class PlayerAttack : MonoBehaviour
         if (cursorHitRadius <= 0f) hitCol = Physics2D.OverlapPoint(mouseWorld, attackableMask);
         else hitCol = Physics2D.OverlapCircle(mouseWorld, cursorHitRadius, attackableMask);
 
-        // 미스면 아무것도 안 함
         if (hitCol == null)
         {
             if (missCooldown > 0f)
@@ -130,33 +127,27 @@ public class PlayerAttack : MonoBehaviour
             yield break;
         }
 
-        // ===== 0.5) Boss 타겟 분기 =====
+        // ===== Boss 분기 =====
         Boss boss = hitCol.GetComponentInParent<Boss>();
         if (boss != null)
         {
-            // ✅ 쿨타임/QTE 중이면 "보스 공격 시도" 자체를 막음 (보스만)
             if (blockBossAttackDuringCooldownOrQTE)
             {
                 if (boss.IsInQTE || !boss.CanStartAttempt)
                     yield break;
             }
 
-            // ✅ 여기부터는 "보스 정상 공격" = 타겟에 붙어서 QTE 진행
             isAttacking = true;
             PlayerActionLock.Lock();
 
-            // 공격 시작 시 그래플 강제 해제
             if (grappling != null)
                 grappling.ForceDetachForAttack();
 
-            // 붙는 지점(보스 중앙 + 오프셋)
             Vector2 bossPoint = (Vector2)boss.transform.position;
             bossPoint.x += enemyTargetOffsetX;
 
-            // 복귀용 X 저장
             float startX = transform.position.x;
 
-            // 공격 중 물리/충돌 정지
             bool prevSimulated = true;
             bool prevColliderEnabled = true;
 
@@ -174,28 +165,22 @@ public class PlayerAttack : MonoBehaviour
                 playerCollider.enabled = false;
             }
 
-            // 훅/체인 ON + 발사 연출
             AttackHookOn();
             yield return ChainShootVisual(bossPoint, chainShootDuration);
 
-            // ✅ 보스에게 "붙기"
             Vector3 from = transform.position;
             yield return MovePlayerKeepingChain(from, bossPoint, flyOutDuration, bossPoint);
 
-            // ✅ 여기서 QTE 시작 (보스가 쿨타임 갱신도 처리)
             bool started = boss.TryStartAttackAttempt();
             if (!started)
             {
-                // 경합/상태변화로 시작 실패면 그냥 종료/복귀
                 AttackHookOff();
                 ChainOff();
             }
             else
             {
-                // ✅ QTE 끝날 때까지 "붙어있는 상태" 유지
                 while (boss.IsInQTE)
                 {
-                    // 체인 시각 유지
                     if (chainLine != null && chainLine.enabled)
                     {
                         Vector2 o = (Vector2)chainOrigin.position;
@@ -207,13 +192,11 @@ public class PlayerAttack : MonoBehaviour
                 }
             }
 
-            // 보스 QTE 종료 후: 체인/훅 OFF
             AttackHookOff();
             ChainOff();
 
-            // ✅ 보스 공격 끝나면 복귀(벽차기 arc)
+            // 복귀
             Vector2 returnPoint = new Vector2(startX, returnYWorld);
-
             if (returnDuration <= 0f)
             {
                 transform.position = returnPoint;
@@ -223,7 +206,10 @@ public class PlayerAttack : MonoBehaviour
                 yield return MovePlayerArcKeepingChain(transform.position, returnPoint, returnDuration, returnArcHeight, bossPoint);
             }
 
-            // 물리/충돌 복구 + 속도 적용
+            // ✅ 여기! "보스 공격 마무리(복귀 끝)" 시점에 쿨타임 시작
+            // (QTE 실패면 GameOver로 씬이 멈출 수 있지만, 성공 루트에서는 확실히 여기까지 온다)
+            boss.StartCooldownNow();
+
             if (playerCollider != null)
                 playerCollider.enabled = prevColliderEnabled;
 
@@ -239,7 +225,7 @@ public class PlayerAttack : MonoBehaviour
             yield break;
         }
 
-        // ===== 1) (기존) Enemy/Obstacle 공격 =====
+        // ===== 이하 Enemy/Obstacle 기존 로직 그대로 =====
         isAttacking = true;
         PlayerActionLock.Lock();
 
@@ -286,15 +272,8 @@ public class PlayerAttack : MonoBehaviour
         yield return HoldWithChain(targetPoint, hitHoldDuration);
 
         Vector2 returnPoint2 = new Vector2(startX2, returnYWorld);
-
-        if (returnDuration <= 0f)
-        {
-            transform.position = returnPoint2;
-        }
-        else
-        {
-            yield return MovePlayerArcKeepingChain(transform.position, returnPoint2, returnDuration, returnArcHeight, targetPoint);
-        }
+        if (returnDuration <= 0f) transform.position = returnPoint2;
+        else yield return MovePlayerArcKeepingChain(transform.position, returnPoint2, returnDuration, returnArcHeight, targetPoint);
 
         ChainOff();
         AttackHookOff();

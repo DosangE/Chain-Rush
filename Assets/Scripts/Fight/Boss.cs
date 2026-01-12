@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Dynamic;
 using UnityEngine;
 
 public class Boss : MonoBehaviour
@@ -33,6 +32,10 @@ public class Boss : MonoBehaviour
             Debug.LogError("[Boss] BossQTE missing. Add BossQTE under Boss prefab and assign it.");
     }
 
+    /// <summary>
+    /// QTE를 시작한다. (여기서는 쿨타임을 찍지 않는다!)
+    /// 쿨타임 시작은 PlayerAttack의 "보스 공격 마무리(복귀 끝)"에서 StartCooldownNow()로 호출한다.
+    /// </summary>
     public bool TryStartAttackAttempt()
     {
         if (hitsToDestroy <= 0) return false;
@@ -40,9 +43,16 @@ public class Boss : MonoBehaviour
         if (Time.time < _nextAttackTime) return false;
         if (qte == null) return false;
 
-        _nextAttackTime = Time.time + attackCooldown;
         StartCoroutine(Co_RunQTE());
         return true;
+    }
+
+    /// <summary>
+    /// ✅ 보스 공격 "마무리 시점"에 쿨타임 시작 (PlayerAttack이 호출)
+    /// </summary>
+    public void StartCooldownNow()
+    {
+        _nextAttackTime = Time.time + attackCooldown;
     }
 
     private IEnumerator Co_RunQTE()
