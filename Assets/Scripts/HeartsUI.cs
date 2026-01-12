@@ -1,17 +1,9 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class HeartsUI : MonoBehaviour
 {
-    [Header("Refs")]
     [SerializeField] private PlayerHealth playerHealth;
-
-    [Header("Hearts (3 images)")]
-    [SerializeField] private Image[] hearts = new Image[3];
-
-    [Header("Sprites")]
-    [SerializeField] private Sprite fullHeart;
-    [SerializeField] private Sprite emptyHeart;
+    [SerializeField] private GameObject[] heartSlots = new GameObject[3]; // HeartSlot_0..2
 
     private void Awake()
     {
@@ -20,27 +12,24 @@ public class HeartsUI : MonoBehaviour
 
         if (playerHealth != null)
         {
-            playerHealth.OnHpChanged += HandleHpChanged;
-            HandleHpChanged(playerHealth.CurrentHp, playerHealth.MaxHp);
+            playerHealth.OnHpChanged += OnHpChanged;
+            OnHpChanged(playerHealth.CurrentHp, playerHealth.MaxHp);
         }
     }
 
     private void OnDestroy()
     {
         if (playerHealth != null)
-            playerHealth.OnHpChanged -= HandleHpChanged;
+            playerHealth.OnHpChanged -= OnHpChanged;
     }
 
-    private void HandleHpChanged(int current, int max)
+    private void OnHpChanged(int current, int max)
     {
-        // max=3 전제지만, 혹시 늘려도 대응되게 작성
-        for (int i = 0; i < hearts.Length; i++)
+        // current=2면 0,1번만 켜짐. 2번은 꺼짐.
+        for (int i = 0; i < heartSlots.Length; i++)
         {
-            if (hearts[i] == null) continue;
-
-            bool filled = (i < current);
-            hearts[i].sprite = filled ? fullHeart : emptyHeart;
-            hearts[i].enabled = true;
+            if (heartSlots[i] == null) continue;
+            heartSlots[i].SetActive(i < current);
         }
     }
 }
