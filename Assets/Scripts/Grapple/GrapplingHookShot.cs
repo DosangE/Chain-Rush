@@ -155,6 +155,5 @@ public class GrapplingHookShot : MonoBehaviour
         g.Line.enabled = false;
 
         g.Hook.position = g.transform.position;
-        UnityEngine.Debug.Log("[ReturnHook]");
     }
 }

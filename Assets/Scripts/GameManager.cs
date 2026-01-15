@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
     public GameObject gameUI;
     public GameObject pausePopupUI;
     public GameObject gameOverUI;
+    public GameObject qteUI;
+    public GameObject playerHealthUI;
 
     [Header("Pause Popup CanvasGroup (권장)")]
     [SerializeField] private CanvasGroup pausePopupCanvasGroup;
@@ -65,8 +67,9 @@ public class GameManager : MonoBehaviour
         if (gameUI != null) gameUI.SetActive(false);
         if (pausePopupUI != null) pausePopupUI.SetActive(false);
         if (gameOverUI != null) gameOverUI.SetActive(false);
+        if (qteUI != null) qteUI.SetActive(false);
     }
-
+    
     private void Update()
     {
         // if (State == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
@@ -109,6 +112,8 @@ public class GameManager : MonoBehaviour
 
         if (gameOverUI != null) gameOverUI.SetActive(true);
         if (pausePopupUI != null) pausePopupUI.SetActive(false);
+        if (qteUI != null) qteUI.SetActive(false);
+        if (playerHealthUI != null) playerHealthUI.SetActive(false);
 
         // timeScale 0
         Time.timeScale = 0f;

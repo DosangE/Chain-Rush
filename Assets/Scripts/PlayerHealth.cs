@@ -23,7 +23,6 @@ public class PlayerHealth : MonoBehaviour
     private void Awake()
     {
         currentHp = maxHp;
-        Debug.Log($"[HP] init {currentHp}/{maxHp}");
         OnHpChanged?.Invoke(currentHp, maxHp);
     }
 
@@ -33,7 +32,6 @@ public class PlayerHealth : MonoBehaviour
         IsInvincible = false;
 
         currentHp = maxHp;
-        Debug.Log($"[HP] reset {currentHp}/{maxHp}");
         OnHpChanged?.Invoke(currentHp, maxHp);
     }
 
@@ -60,6 +58,24 @@ public class PlayerHealth : MonoBehaviour
         else
         {
             StartCoroutine(InvincibleRoutine());
+        }
+
+        return true;
+    }
+
+    public bool BossTakeDamage(int amount)
+    {
+        if (amount <= 0) return false;
+        if (currentHp <= 0) return false;
+
+        currentHp = Mathf.Max(0, currentHp - amount);
+        Debug.Log($"[HP] -{amount} => {currentHp}/{maxHp}");
+        OnHpChanged?.Invoke(currentHp, maxHp);
+
+        if (currentHp <= 0)
+        {
+            Debug.Log("[HP] died");
+            OnDied?.Invoke();
         }
 
         return true;

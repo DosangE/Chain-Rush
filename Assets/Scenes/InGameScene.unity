@@ -323,8 +323,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20cf9b7921bd386409cbdc16ba7dcc37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentMapSpeed: 25
-  baseMapSpeed: 15
+  currentMapSpeed: 13
+  baseMapSpeed: 13
   bgs:
   - {fileID: 1826548437}
   - {fileID: 1689253514}
@@ -342,11 +342,14 @@ MonoBehaviour:
   spawnDistanceAhead: 20
   bossPrefab: {fileID: 2164078382629352759, guid: ae37098738aaf8543a40b892eaff270f, type: 3}
   bossPos: {fileID: 666554977}
-  chunksBeforeBoss: 15
-  bossSpawnOffsetFromPlayer: {x: 8, y: 1}
-  forceFlatOneChunkBeforeBoss: 1
-  forceFlatPatternWhileBossAlive: 1
+  chunksBeforeBoss: 3
+  removedChunksBeforeQTE: 3
+  qteOnlyOnceAfterBossSpawn: 0
   debugBossAndChunk: 0
+  speedStages:
+  - 15
+  - 19
+  - 23
 --- !u!114 &211410386
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -660,7 +663,7 @@ MonoBehaviour:
   autoDetachDistance: 0.1
   autoDetachBoostHeight: 2
   forceDetachBoostHeight: 5
-  leftClickCooldownAfterGrapple: 0.1
+  leftClickCooldownAfterGrapple: 0.05
   jumpHeightMultiplier: 0.75
   jumpGravityMultiplier: 1.6
   maxFallSpeed: 10
@@ -692,7 +695,7 @@ MonoBehaviour:
   flyOutDuration: 0.1
   hitHoldDuration: 0.1
   returnYWorld: 1.5
-  returnDuration: 0.3
+  returnDuration: 0.25
   returnArcHeight: 2
   postReturnVelocity: {x: 0, y: 0}
   flyEase:
@@ -1265,6 +1268,8 @@ MonoBehaviour:
   gameUI: {fileID: 0}
   pausePopupUI: {fileID: 1028081669}
   gameOverUI: {fileID: 1761555067}
+  qteUI: {fileID: 2029198669}
+  playerHealthUI: {fileID: 1859834747}
   pausePopupCanvasGroup: {fileID: 0}
   titleSceneName: TitleScene
 --- !u!1 &612420565

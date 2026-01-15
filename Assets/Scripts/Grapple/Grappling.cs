@@ -63,6 +63,8 @@ public class Grappling : MonoBehaviour
     [Header("Hook Visual")]
     [SerializeField] private float hookAngleOffset = 0f;
 
+    private bool pendingLeftClick = false;
+
     private bool isDead = false;
     private bool isGrounded;
     private bool isTensionHolding;
@@ -193,17 +195,19 @@ public class Grappling : MonoBehaviour
     void Update()
     {
         if (isDead) return;
+
+        // ✅ 잠금 중에도 GetKeyDown을 "저장"만 해둔다 (유실 방지)
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+            pendingLeftClick = true;
+
         if (PlayerActionLock.IsLocked)
-        {
             return;
-        }
+
         if (GameManager.Instance != null && GameManager.Instance.IsInputLocked)
             return;
 
         if (leftClickCooldownTimer > 0f)
-        {
             leftClickCooldownTimer -= Time.deltaTime;
-        }
 
         ApplyMapSpeedScaling();
 
@@ -214,6 +218,7 @@ public class Grappling : MonoBehaviour
 
         UpdateHookVisual();
     }
+
 
     void FixedUpdate()
     {
@@ -299,8 +304,10 @@ public class Grappling : MonoBehaviour
     {
         bool canUseLeftClickForGrapple = (leftClickCooldownTimer <= 0f);
 
-        if (Input.GetKeyDown(KeyCode.Mouse0) && !isHookActive)
+        if (pendingLeftClick && !isHookActive)
         {
+            pendingLeftClick = false;
+
             if (isGrounded)
             {
                 Jump();
@@ -320,6 +327,7 @@ public class Grappling : MonoBehaviour
             else ShootHook();
         }
     }
+
 
     public void OnDeath()
     {

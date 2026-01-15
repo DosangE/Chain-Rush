@@ -63,6 +63,24 @@ public class PlayerAttack : MonoBehaviour
     private bool isAttacking;
     private float nextAttackAllowedTime;
 
+    // ✅ QTE 성공으로 얻는 "보스 1회 공격권"
+    private int bossHitCredit = 0;
+
+    public void GrantBossHitCredit(int amount)
+    {
+        if (amount <= 0) return;
+
+        bossHitCredit = 1;
+    }
+
+
+    private bool ConsumeBossHitCredit()
+    {
+        if (bossHitCredit <= 0) return false;
+        bossHitCredit--;
+        return true;
+    }
+
     private void Reset()
     {
         cam = Camera.main;
@@ -91,6 +109,7 @@ public class PlayerAttack : MonoBehaviour
         if (PlayerActionLock.IsLocked) return;
         if (GameManager.Instance != null && GameManager.Instance.IsInputLocked)
             return;
+
         if (Input.GetKeyDown(KeyCode.Space))
             TryAttack();
     }
@@ -132,11 +151,13 @@ public class PlayerAttack : MonoBehaviour
         Boss boss = hitCol.GetComponentInParent<Boss>();
         if (boss != null)
         {
-            if (blockBossAttackDuringCooldownOrQTE)
-            {
-                if (boss.IsInQTE || !boss.CanStartAttempt)
-                    yield break;
-            }
+            // ✅ QTE 중이면 보스 공격 시도 자체 차단
+            if (blockBossAttackDuringCooldownOrQTE && boss.IsInQTE)
+                yield break;
+
+            // ✅ 공격권 없으면 보스는 공격 불가
+            if (!ConsumeBossHitCredit())
+                yield break;
 
             isAttacking = true;
             PlayerActionLock.Lock();
@@ -172,27 +193,11 @@ public class PlayerAttack : MonoBehaviour
             Vector3 from = transform.position;
             yield return MovePlayerKeepingChain(from, bossPoint, flyOutDuration, bossPoint);
 
-            bool started = boss.TryStartAttackAttempt();
-            if (!started)
-            {
-                AttackHookOff();
-                ChainOff();
-            }
-            else
-            {
-                while (boss.IsInQTE)
-                {
-                    if (chainLine != null && chainLine.enabled)
-                    {
-                        Vector2 o = (Vector2)chainOrigin.position;
-                        chainLine.SetPosition(0, o);
-                        chainLine.SetPosition(1, bossPoint);
-                        UpdateAttackHookVisual(o, bossPoint);
-                    }
-                    yield return null;
-                }
-            }
-
+            // ✅ 여기서 QTE 시작 X
+            // ✅ 보스 HP 1 감소(공격권 1회 사용)
+            boss.OnHitByAttack();
+            if (useHitSlowMo)
+                yield return HitSlowMo(hitTimeScale, hitSlowMoDurationRealtime);
             AttackHookOff();
             ChainOff();
 
@@ -206,10 +211,6 @@ public class PlayerAttack : MonoBehaviour
             {
                 yield return MovePlayerArcKeepingChain(transform.position, returnPoint, returnDuration, returnArcHeight, bossPoint);
             }
-
-            // ✅ 여기! "보스 공격 마무리(복귀 끝)" 시점에 쿨타임 시작
-            // (QTE 실패면 GameOver로 씬이 멈출 수 있지만, 성공 루트에서는 확실히 여기까지 온다)
-            boss.StartCooldownNow();
 
             if (playerCollider != null)
                 playerCollider.enabled = prevColliderEnabled;
@@ -468,4 +469,9 @@ public class PlayerAttack : MonoBehaviour
         float angle = Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg;
         grappling.Hook.rotation = Quaternion.Euler(0f, 0f, angle + attackHookAngleOffset);
     }
+    public bool HasBossHitCredit()
+    {
+        return bossHitCredit > 0;
+    }
+
 }

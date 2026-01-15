@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Transactions;
 using UnityEngine;
 
 public class MapManager : MonoBehaviour
@@ -9,7 +8,7 @@ public class MapManager : MonoBehaviour
     public float baseMapSpeed = 15f;
 
     [Header("Background Settings")]
-    public Transform[] bgs = new Transform[3]; // bg1, bg2, bg3를 인스펙터에서 할당
+    public Transform[] bgs = new Transform[3];
     public float parallax = 0.3f;
     public MapMover mapMover;
 
@@ -32,33 +31,50 @@ public class MapManager : MonoBehaviour
     [Header("Boss Spawn")]
     [SerializeField] private GameObject bossPrefab;
     [SerializeField] private Transform bossPos;
-    
+
     [Tooltip("누적 청크 스폰 수(초기 청크 포함)가 이 값에 도달하면 보스 1회 소환")]
     [SerializeField] private int chunksBeforeBoss = 10;
 
-    [Tooltip("플레이어 기준 보스 등장 위치 오프셋(월드). 플레이어 X 고정 기준 화면에 보이게 +X 권장")]
-    [SerializeField] private Vector2 bossSpawnOffsetFromPlayer = new Vector2(8f, 0f);
+    [Header("Boss QTE Trigger (by removed chunks)")]
+    [Tooltip("보스 진입(=보스 소환) 이후, '삭제된 청크'가 이 개수만큼 누적되면 QTE 발생")]
+    [SerializeField] private int removedChunksBeforeQTE = 3;
 
-    [Tooltip("보스 출현 1개 전부터(=chunksBeforeBoss-1번째 청크부터) 평지(0번) 강제")]
-    [SerializeField] private bool forceFlatOneChunkBeforeBoss = true;
-
-    [Tooltip("보스가 살아있는 동안 평지(0번) 강제")]
-    [SerializeField] private bool forceFlatPatternWhileBossAlive = true;
+    [Tooltip("true면 QTE가 한 번만, false면 removedChunksBeforeQTE마다 반복 발생")]
+    [SerializeField] private bool qteOnlyOnceAfterBossSpawn = false;
 
     [Header("Debug")]
     [SerializeField] private bool debugBossAndChunk = false;
 
-    private int spawnedChunkCount = 0;   // 초기 청크 포함 누적 스폰 수
-    private bool bossSpawned = false;    // 보스 1회 소환 여부
-    private GameObject spawnedBossObj = null; // 보스 오브젝트 참조(컴포넌트 null 문제 대비)
-    private Boss spawnedBoss = null;     // 보스 컴포넌트 참조(있으면 PlayerAttack 등과 연계)
+    private int spawnedChunkCount = 0;       // 초기 청크 포함 누적 스폰 수
+    private bool bossSpawned = false;        // 보스 1회 소환 여부
+    private GameObject spawnedBossObj = null;
+    private Boss spawnedBoss = null;
+
+    // --- 삭제(지나감) 카운터 ---
+    private int removedChunkCountTotal = 0;  // 게임 시작 이후 삭제된 청크 총합
+    private int removedChunkCountAtBossSpawn = 0; // 보스 소환 시점의 removedChunkCountTotal
+    private int removedChunkCountAtLastQTE = 0;   // 마지막 QTE 시작 시점의 removedChunkCountTotal
+    private bool qteTriggeredOnce = false;
+
+    [Header("Speed Stages")]
+    [SerializeField] private float[] speedStages = { 15f, 19f, 23f };
+
+    private int currentSpeedStage = 0;
+
+    private int spawnedChunkCountAtStageStart = 0; // 스테이지 시작 시점 누적 스폰 수
+
+    private bool waitUntilBossHitConsumed = false;
+    private PlayerAttack cachedPlayerAttack = null;
+
 
     void Start()
     {
-        // player / mapMover가 인스펙터에서 비어있으면 자동으로 찾아봄 (안전장치)
+        currentSpeedStage = 0;
+        currentMapSpeed = speedStages[currentSpeedStage];
+        spawnedChunkCountAtStageStart = 0;
+
         TryResolveRefs();
 
-        // 1) 맵 조각 초기화
         if (mapPatterns != null && mapPatterns.Count > 0)
         {
             SpawnInitialChunk();
@@ -68,10 +84,8 @@ public class MapManager : MonoBehaviour
             Debug.LogError("[MapManager] mapPatterns가 비어있습니다.");
         }
 
-        // 2) 배경 초기화
         if (bgs == null || bgs.Length == 0 || bgs[0] == null)
         {
-            // 배경 없이도 게임 진행 가능하게 early return은 하되, chunk 시스템은 이미 Start에서 진행됨
             return;
         }
 
@@ -84,7 +98,6 @@ public class MapManager : MonoBehaviour
 
         bgWidth = sr.bounds.size.x;
 
-        // 틈새 방지 보정
         bgWidth = Mathf.Ceil(bgWidth * 1000f) / 1000f;
         bgWidth += 0.02f;
 
@@ -92,8 +105,6 @@ public class MapManager : MonoBehaviour
         for (int i = 0; i < bgs.Length; i++)
         {
             if (bgs[i] == null) continue;
-
-            // 첫 번째 배경 기준으로 i번째 배경을 순서대로 배치
             bgs[i].position = bgs[0].position + new Vector3((bgWidth - 0.2f) * i, 0, 0);
             activeBGs.Add(bgs[i]);
         }
@@ -104,33 +115,25 @@ public class MapManager : MonoBehaviour
 
     void Update()
     {
-        // ✅ 게임 진행 중이 아니면 MapManager가 player/mapMover를 만지지 않게 막음
         if (GameManager.Instance != null && GameManager.Instance.State != GameState.Playing)
             return;
 
-        // ✅ player가 Destroy 되었거나 미할당이면 Update에서 더 이상 접근하지 않음
         if (player == null)
         {
-            // 재시작/씬리로드 등으로 player가 새로 생겼을 수도 있으니 한 번 찾아서 복구 시도
             var p = GameObject.FindGameObjectWithTag("Player");
             if (p != null) player = p.transform;
-
-            if (player == null) return; // 그래도 없으면 종료
+            if (player == null) return;
         }
 
-        // ✅ lastEndPoint가 없으면 chunk 시스템 진행 불가 (초기화 실패 보호)
         if (lastEndPoint == null)
             return;
 
-        // 3) 맵 조각 생성 & 제거 로직
-        // 플레이어 X 고정 + 맵 이동 구조에서는 endPoint가 왼쪽으로 밀리면서 조건을 만족하게 됨.
         if (player.position.x + spawnDistanceAhead > lastEndPoint.position.x)
         {
             SpawnNextChunk();
-            RemoveOldChunk();
+            RemoveOldChunk(); // ✅ 여기서 삭제 카운트 + QTE 트리거
         }
 
-        // 4) 패럴랙스 이동 로직
         if (mapMover != null)
         {
             float currentX = mapMover.transform.position.x;
@@ -148,7 +151,6 @@ public class MapManager : MonoBehaviour
             lastMoverX = currentX;
         }
 
-        // 5) 무한 배경 순환 로직 (3개 순환)
         if (activeBGs.Count > 0 && bgWidth > 0.001f)
             UpdateBackgroundCycling();
     }
@@ -161,13 +163,11 @@ public class MapManager : MonoBehaviour
         float camHalfWidth = cam.orthographicSize * cam.aspect;
         float camLeftX = cam.transform.position.x - camHalfWidth;
 
-        // activeBGs[0]은 항상 현재 가장 왼쪽에 있는 배경입니다.
         if (activeBGs[0] != null && activeBGs[0].position.x + bgWidth / 2 < camLeftX)
         {
             Transform firstBG = activeBGs[0];
             activeBGs.RemoveAt(0);
 
-            // 현재 가장 마지막 배경(오른쪽 끝)의 뒤에 배치
             Transform lastBG = activeBGs[activeBGs.Count - 1];
             if (lastBG != null && firstBG != null)
                 firstBG.position = lastBG.position + new Vector3(bgWidth - 0.2f, 0, 0);
@@ -176,7 +176,6 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    // --- 기존 맵 생성 시스템 (기능 유지 + 방어만 추가) ---
     void SpawnInitialChunk()
     {
         if (mapPatterns == null || mapPatterns.Count == 0) return;
@@ -186,7 +185,6 @@ public class MapManager : MonoBehaviour
 
         GameObject chunk = Instantiate(prefab, Vector3.zero, Quaternion.identity);
 
-        // ✅ 초기 청크도 갭 보정 적용
         var gapScaler = chunk.GetComponent<MapChunkGapScaler>();
         if (gapScaler != null)
         {
@@ -204,7 +202,6 @@ public class MapManager : MonoBehaviour
         lastEndPoint = pattern.endPoint;
         chunks.Enqueue(chunk);
 
-        // ✅ 초기 청크 포함 누적 카운트
         spawnedChunkCount++;
         TrySpawnBossIfReady();
     }
@@ -214,7 +211,7 @@ public class MapManager : MonoBehaviour
         if (mapPatterns == null || mapPatterns.Count == 0) return;
         if (lastEndPoint == null) return;
 
-        int index = DecideNextPatternIndex();
+        int index = DecideNextPatternIndex(); // ✅ 보스 중 평지 강제 제거된 랜덤
         GameObject prefab = mapPatterns[index];
         if (prefab == null) return;
 
@@ -223,7 +220,6 @@ public class MapManager : MonoBehaviour
         var gapScaler = chunk.GetComponent<MapChunkGapScaler>();
         if (gapScaler != null)
         {
-            // ✅ 프리팹 로컬 좌표 상태에서 먼저 갭 보정
             gapScaler.Apply(currentMapSpeed);
         }
 
@@ -234,44 +230,23 @@ public class MapManager : MonoBehaviour
             return;
         }
 
-        // ✅ 갭 보정이 끝난 startPoint 기준으로 접합
         Vector3 startLocal = pattern.startPoint.localPosition;
         chunk.transform.position = lastEndPoint.position - startLocal;
 
-        // ✅ 이제 endPoint는 완성된 상태
         lastEndPoint = pattern.endPoint;
         chunks.Enqueue(chunk);
 
-        // ✅ 누적 카운트 + 보스 스폰 체크
         spawnedChunkCount++;
         TrySpawnBossIfReady();
 
         if (debugBossAndChunk)
         {
-            Debug.Log($"[MapManager] SpawnedChunkCount={spawnedChunkCount}, BossSpawned={bossSpawned}, BossAlive={IsBossAlive()}, PatternIndex={index}");
+            Debug.Log($"[MapManager] SpawnedChunkCount={spawnedChunkCount}, BossSpawned={bossSpawned}, BossAlive={IsBossAlive()}, PatternIndex={index}, RemovedTotal={removedChunkCountTotal}");
         }
     }
 
     private int DecideNextPatternIndex()
     {
-        // 다음에 스폰될 청크 번호(초기 청크 포함 누적 기준)
-        int nextChunkNumber = spawnedChunkCount + 1;
-
-        bool bossAlive = IsBossAlive();
-
-        // 1) 보스가 살아있는 동안: 평지 강제
-        if (forceFlatPatternWhileBossAlive && bossAlive)
-            return 0;
-
-        // 2) 보스 출현 1개 전부터: 평지 강제 (보스 아직 소환 안 된 상태에서만)
-        if (forceFlatOneChunkBeforeBoss && !bossSpawned)
-        {
-            // chunksBeforeBoss=10이면 nextChunkNumber가 9 이상이면 평지로 바뀜
-            if (chunksBeforeBoss >= 2 && nextChunkNumber >= chunksBeforeBoss - 1)
-                return 0;
-        }
-
-        // 3) 그 외엔 랜덤
         return Random.Range(0, mapPatterns.Count);
     }
 
@@ -280,7 +255,16 @@ public class MapManager : MonoBehaviour
         while (chunks.Count > maxChunks)
         {
             var old = chunks.Dequeue();
-            if (old != null) Destroy(old);
+            if (old != null)
+            {
+                Destroy(old);
+
+                // ✅ "삭제된 청크" = 실제로 지나간 청크로 카운트
+                removedChunkCountTotal++;
+
+                // ✅ 보스전 QTE 트리거는 삭제 기준으로 체크
+                TryTriggerBossQTEByRemovedChunks();
+            }
         }
     }
 
@@ -294,6 +278,9 @@ public class MapManager : MonoBehaviour
 
         if (mapMover == null)
             mapMover = FindObjectOfType<MapMover>();
+
+        if (cachedPlayerAttack == null)
+            cachedPlayerAttack = FindObjectOfType<PlayerAttack>();
     }
 
     // =========================
@@ -303,7 +290,8 @@ public class MapManager : MonoBehaviour
     {
         if (bossSpawned) return;
         if (bossPrefab == null) return;
-        if (spawnedChunkCount < chunksBeforeBoss) return;
+
+        if ((spawnedChunkCount - spawnedChunkCountAtStageStart) < chunksBeforeBoss) return;
 
         SpawnBoss();
     }
@@ -319,35 +307,112 @@ public class MapManager : MonoBehaviour
             return;
         }
 
-        Vector3 spawnPos = bossPos.position;
+        Vector3 spawnPos = (bossPos != null) ? bossPos.position : player.position;
 
-        // ✅ 부모 null 강제 -> MapMover(맵 루트) 영향에서 완전히 분리
         GameObject bossObj = Instantiate(bossPrefab, spawnPos, Quaternion.identity, null);
-
         spawnedBossObj = bossObj;
 
-        // ✅ 루트/자식 어디에 Boss가 있든 찾기
         spawnedBoss = bossObj.GetComponent<Boss>();
         if (spawnedBoss == null)
             spawnedBoss = bossObj.GetComponentInChildren<Boss>(true);
 
-        if (spawnedBoss == null)
-        {
-            Debug.LogWarning("[MapManager] Boss Prefab(또는 자식)에 Boss 컴포넌트가 없습니다. "
-                + "PlayerAttack의 보스 공격 분기(GetComponentInParent<Boss>)도 실패할 수 있습니다.");
-        }
+        // ✅ 보스 진입 시점의 "삭제 카운트"를 기준점으로 저장
+        removedChunkCountAtBossSpawn = removedChunkCountTotal;
+        removedChunkCountAtLastQTE = removedChunkCountTotal;
+        qteTriggeredOnce = false;
 
         if (debugBossAndChunk)
         {
-            Debug.Log($"[MapManager] Boss Spawned at {spawnPos}. BossCompFound={(spawnedBoss != null)}");
+            Debug.Log($"[MapManager] Boss Spawned at {spawnPos}. RemovedAtBossSpawn={removedChunkCountAtBossSpawn}, BossCompFound={(spawnedBoss != null)}");
+        }
+    }
+
+    private void TryTriggerBossQTEByRemovedChunks()
+    {
+        if (!bossSpawned) return;
+        if (!IsBossAlive()) return;
+        if (qteOnlyOnceAfterBossSpawn && qteTriggeredOnce) return;
+
+        // ✅ QTE 성공으로 공격권(보스 1회 타격)이 생긴 상태면,
+        // 그 공격권을 "소모할 때까지" QTE를 다시 띄우지 않는다.
+        if (waitUntilBossHitConsumed)
+        {
+            if (cachedPlayerAttack == null)
+                cachedPlayerAttack = FindObjectOfType<PlayerAttack>();
+
+            // PlayerAttack에 아래에서 추가할 메서드 사용
+            if (cachedPlayerAttack != null && cachedPlayerAttack.HasBossHitCredit())
+                return;
+
+            // 공격권이 없어진 순간부터 다시 N청크 카운트 시작
+            waitUntilBossHitConsumed = false;
+            removedChunkCountAtLastQTE = removedChunkCountTotal;
+        }
+
+        // Boss 참조 복구 시도(혹시 누락됐을 때)
+        if (spawnedBoss == null && spawnedBossObj != null)
+        {
+            spawnedBoss = spawnedBossObj.GetComponent<Boss>();
+            if (spawnedBoss == null)
+                spawnedBoss = spawnedBossObj.GetComponentInChildren<Boss>(true);
+        }
+        if (spawnedBoss == null) return;
+
+        if (spawnedBoss.IsInQTE) return;
+
+        int baseRemoved = qteOnlyOnceAfterBossSpawn ? removedChunkCountAtBossSpawn : removedChunkCountAtLastQTE;
+        int passed = removedChunkCountTotal - baseRemoved;
+
+        if (passed < removedChunksBeforeQTE) return;
+
+        bool started = spawnedBoss.ForceStartAttackAttempt(); // ✅ 쿨타임 무시 강제 시작
+        if (started)
+        {
+            if (qteOnlyOnceAfterBossSpawn) qteTriggeredOnce = true;
+
+            if (debugBossAndChunk)
+                Debug.Log($"[MapManager] QTE TRIGGERED. passedRemoved={passed}, removedTotal={removedChunkCountTotal}");
         }
     }
 
     private bool IsBossAlive()
     {
-        // Unity Destroy 특성상 파괴되면 == null로 판정됨
         if (spawnedBossObj != null) return true;
         if (spawnedBoss != null) return true;
         return false;
+    }
+
+    public void AdvanceSpeedStage()
+    {
+        if (currentSpeedStage >= speedStages.Length - 1)
+            return;
+
+        currentSpeedStage++;
+        currentMapSpeed = speedStages[currentSpeedStage];
+
+        Debug.Log($"[MapManager] Speed Stage {currentSpeedStage + 1} → {currentMapSpeed}");
+    }
+
+    public void OnBossDefeated()
+    {
+        // ✅ 보스 참조 정리
+        bossSpawned = false;
+        spawnedBossObj = null;
+        spawnedBoss = null;
+
+        // ✅ 다음 스테이지 시작 기준점 갱신 (지금부터 다시 chunksBeforeBoss 카운트)
+        spawnedChunkCountAtStageStart = spawnedChunkCount;
+
+        // ✅ QTE 기준점 리셋(다음 보스 기준으로 다시 계산)
+        removedChunkCountAtBossSpawn = removedChunkCountTotal;
+        removedChunkCountAtLastQTE = removedChunkCountTotal;
+        qteTriggeredOnce = false;
+    }
+
+    public void OnBossQTEResult(bool success)
+    {
+        // ✅ 성공/실패와 무관하게 QTE가 "끝난 시점"부터
+        // removedChunksBeforeQTE 만큼 청크가 더 지나야 다음 QTE
+        removedChunkCountAtLastQTE = removedChunkCountTotal;
     }
 }
