@@ -129,7 +129,6 @@ public class BossQTE : MonoBehaviour
         }
         else
         {
-            // 오답: 처음부터
             if (debugLog) Debug.Log($"[BossQTE] Wrong {pressed} expected {expected} -> reset");
 
             ResetProgressOnly();

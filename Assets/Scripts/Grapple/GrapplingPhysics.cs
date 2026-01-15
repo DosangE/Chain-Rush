@@ -98,6 +98,5 @@ public class GrapplingPhysics : MonoBehaviour
         g.Hook.gameObject.SetActive(false);
         g.Line.enabled = false;
         g.Hook.position = g.transform.position;
-        Debug.Log("[ReleaseGrapple]");
     }
 }
