@@ -8,42 +8,64 @@ public class HeartBlink : MonoBehaviour
     [SerializeField] private Sprite frameB;
 
     [Tooltip("프레임 전환 간격(초)")]
-    [SerializeField] private float interval = 0.25f;
+    [SerializeField] private float interval = 0.5f;
+
+    // 모든 HeartBlink가 공유하는 기준 시각(동기화용)
+    private static float s_startTime = -1f;
 
     private Image img;
-    private float t;
-    private bool toggle;
+    private int lastPhase = -1;
 
     private void Awake()
     {
         img = GetComponent<Image>();
-        ApplySprite();
+
+        // 첫 HeartBlink가 기준 시각을 잡음 (씬 시작 시 동기화)
+        if (s_startTime < 0f)
+            s_startTime = Time.unscaledTime;
+
+        ApplyByGlobalPhase(force: true);
+    }
+
+    private void OnEnable()
+    {
+        // 재활성화되어도 "지금 전역 위상"에 맞는 프레임으로 즉시 표시
+        ApplyByGlobalPhase(force: true);
     }
 
     private void Update()
     {
-        // 비활성화 되면 Update 안 돔
-        t += Time.unscaledDeltaTime; // 일시정지(타임스케일)에도 UI는 돌게 하고 싶으면 unscaled 추천
-        if (t >= interval)
-        {
-            t = 0f;
-            toggle = !toggle;
-            ApplySprite();
-        }
+        ApplyByGlobalPhase(force: false);
     }
 
-    private void ApplySprite()
+    private void ApplyByGlobalPhase(bool force)
     {
         if (img == null) return;
-        img.sprite = toggle ? frameB : frameA;
+        if (interval <= 0f) interval = 0.5f;
+
+        float t = Time.unscaledTime - s_startTime;
+        int phase = (int)Mathf.Floor(t / interval) & 1; // 0 또는 1
+
+        if (!force && phase == lastPhase) return;
+
+        lastPhase = phase;
+        img.sprite = (phase == 0) ? frameA : frameB;
+    }
+
+    public static void RestartGlobalBlinkPhase()
+    {
+        s_startTime = Time.unscaledTime;
+    }
+
+    public void ResetBlink()
+    {
+        ApplyByGlobalPhase(force: true);
     }
 
     public void SetFrames(Sprite a, Sprite b)
     {
         frameA = a;
         frameB = b;
-        toggle = false;
-        t = 0f;
-        ApplySprite();
+        ApplyByGlobalPhase(force: true);
     }
 }

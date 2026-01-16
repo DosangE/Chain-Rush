@@ -29,7 +29,9 @@ public class MapManager : MonoBehaviour
     // Boss Spawn
     // =========================
     [Header("Boss Spawn")]
-    [SerializeField] private GameObject bossPrefab;
+    [SerializeField] private GameObject bossPrefabStage1;
+    [SerializeField] private GameObject bossPrefabStage2;
+    [SerializeField] private GameObject bossPrefabFinal;
     [SerializeField] private Transform bossPos;
 
     [Tooltip("누적 청크 스폰 수(초기 청크 포함)가 이 값에 도달하면 보스 1회 소환")]
@@ -289,7 +291,6 @@ public class MapManager : MonoBehaviour
     private void TrySpawnBossIfReady()
     {
         if (bossSpawned) return;
-        if (bossPrefab == null) return;
 
         if ((spawnedChunkCount - spawnedChunkCountAtStageStart) < chunksBeforeBoss) return;
 
@@ -309,8 +310,13 @@ public class MapManager : MonoBehaviour
 
         Vector3 spawnPos = (bossPos != null) ? bossPos.position : player.position;
 
-        GameObject bossObj = Instantiate(bossPrefab, spawnPos, Quaternion.identity, null);
-        spawnedBossObj = bossObj;
+        GameObject prefab =
+            currentSpeedStage == 0 ? bossPrefabStage1 :
+            currentSpeedStage == 1 ? bossPrefabStage2 :
+            bossPrefabFinal;
+
+        GameObject bossObj = Instantiate(prefab, spawnPos, Quaternion.identity);
+
 
         spawnedBoss = bossObj.GetComponent<Boss>();
         if (spawnedBoss == null)

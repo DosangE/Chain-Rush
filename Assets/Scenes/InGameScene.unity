@@ -340,7 +340,9 @@ MonoBehaviour:
   maxChunks: 3
   player: {fileID: 302225599}
   spawnDistanceAhead: 20
-  bossPrefab: {fileID: 2164078382629352759, guid: ae37098738aaf8543a40b892eaff270f, type: 3}
+  bossPrefabStage1: {fileID: 2164078382629352759, guid: ae37098738aaf8543a40b892eaff270f, type: 3}
+  bossPrefabStage2: {fileID: 2164078382629352759, guid: 7e103d6b383e37845b7161efcf6d4d17, type: 3}
+  bossPrefabFinal: {fileID: 2164078382629352759, guid: ccf4486c78be78649b357b60b0661748, type: 3}
   bossPos: {fileID: 666554977}
   chunksBeforeBoss: 3
   removedChunksBeforeQTE: 3
@@ -413,10 +415,10 @@ GameObject:
   - component: {fileID: 302225604}
   - component: {fileID: 302225603}
   - component: {fileID: 302225602}
-  - component: {fileID: 302225596}
-  - component: {fileID: 302225601}
   - component: {fileID: 302225609}
   - component: {fileID: 302225608}
+  - component: {fileID: 302225596}
+  - component: {fileID: 302225601}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -747,6 +749,7 @@ MonoBehaviour:
   maxHp: 3
   currentHp: 0
   invincibleTime: 1
+  heartsUI: {fileID: 1859834752}
 --- !u!114 &302225609
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1763,10 +1766,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -2178,10 +2181,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -3265,10 +3268,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3

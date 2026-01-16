@@ -34,24 +34,19 @@ public class BossQTE : MonoBehaviour
     public int SolvedCount => _index;
     public int RemainingCount => Mathf.Max(0, _pattern.Count - _index);
 
+    // ✅ UI/로직이 참조하는 "실제 제한시간"
+    public float TotalTimeLimit => totalTimeLimit;
+    public float PerKeyTimeLimit => perKeyTimeLimit;
+
     private readonly List<KeyCode> _pattern = new List<KeyCode>();
     private int _index;
 
     private float _startTimeUnscaled;
     private float _lastInputTimeUnscaled;
 
-    public float TotalTimeLimit => totalTimeLimit;
-    public float PerKeyTimeLimit => perKeyTimeLimit;
-
     private void Awake()
     {
         if (ui == null) ui = FindObjectOfType<QTEUI>(true);
-    }
-
-    private void OnEnable()
-    {
-        if (debugLog)
-            Debug.Log($"[BossQTE] OnEnable (activeInHierarchy={gameObject.activeInHierarchy}, enabled={enabled})");
     }
 
     public void Begin()
@@ -69,7 +64,7 @@ public class BossQTE : MonoBehaviour
         _lastInputTimeUnscaled = Time.unscaledTime;
 
         if (debugLog)
-            Debug.Log($"[BossQTE] Begin() patternLength={_pattern.Count}, ui={(ui != null ? "OK" : "NULL")}");
+            Debug.Log($"[BossQTE] Begin totalTimeLimit={totalTimeLimit}, perKeyTimeLimit={perKeyTimeLimit}, patternLen={patternLength}");
 
         if (ui != null) ui.Show(this);
     }
@@ -80,7 +75,7 @@ public class BossQTE : MonoBehaviour
 
         float now = Time.unscaledTime;
 
-        // 시간 제한 체크
+        // 전체 시간 제한 체크
         if (totalTimeLimit > 0f && now - _startTimeUnscaled > totalTimeLimit)
         {
             if (debugLog) Debug.Log("[BossQTE] FAIL (total time limit)");
@@ -88,6 +83,7 @@ public class BossQTE : MonoBehaviour
             return;
         }
 
+        // 키 간 시간 제한 체크
         if (perKeyTimeLimit > 0f && now - _lastInputTimeUnscaled > perKeyTimeLimit)
         {
             if (debugLog) Debug.Log("[BossQTE] FAIL (per key time limit)");
@@ -130,9 +126,7 @@ public class BossQTE : MonoBehaviour
         else
         {
             if (debugLog) Debug.Log($"[BossQTE] Wrong {pressed} expected {expected} -> reset");
-
             ResetProgressOnly();
-
             if (ui != null) ui.OnWrongReset(this);
         }
     }

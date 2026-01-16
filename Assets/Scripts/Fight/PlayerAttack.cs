@@ -63,7 +63,6 @@ public class PlayerAttack : MonoBehaviour
     private bool isAttacking;
     private float nextAttackAllowedTime;
 
-    // ✅ QTE 성공으로 얻는 "보스 1회 공격권"
     private int bossHitCredit = 0;
 
     public void GrantBossHitCredit(int amount)
@@ -193,7 +192,6 @@ public class PlayerAttack : MonoBehaviour
             Vector3 from = transform.position;
             yield return MovePlayerKeepingChain(from, bossPoint, flyOutDuration, bossPoint);
 
-            // ✅ 여기서 QTE 시작 X
             // ✅ 보스 HP 1 감소(공격권 1회 사용)
             boss.OnHitByAttack();
             if (useHitSlowMo)
