@@ -47,6 +47,9 @@ public class MapManager : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool debugBossAndChunk = false;
 
+    [Header("UI")]
+    [SerializeField] private PopupTextUI speedUpPopupUI;
+
     private int spawnedChunkCount = 0;       // 초기 청크 포함 누적 스폰 수
     private bool bossSpawned = false;        // 보스 1회 소환 여부
     private GameObject spawnedBossObj = null;
@@ -395,6 +398,9 @@ public class MapManager : MonoBehaviour
 
         currentSpeedStage++;
         currentMapSpeed = speedStages[currentSpeedStage];
+
+        if (speedUpPopupUI != null)
+            speedUpPopupUI.Play("SPEED UP!!");
 
         Debug.Log($"[MapManager] Speed Stage {currentSpeedStage + 1} → {currentMapSpeed}");
     }

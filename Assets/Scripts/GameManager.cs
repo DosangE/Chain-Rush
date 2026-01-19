@@ -10,7 +10,6 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
     public GameState State { get; private set; } = GameState.Playing;
 
-    // ★ 다른 스크립트들이 이걸 보고 입력을 막을 수 있게
     public bool IsInputLocked => (State != GameState.Playing);
 
     private MapMover mapMover;
