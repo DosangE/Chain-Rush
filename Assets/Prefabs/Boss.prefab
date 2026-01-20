@@ -79,7 +79,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: -1
-  m_Sprite: {fileID: 21300000, guid: f9ff0607c04cec04cad93b01ecc97253, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 9cd54188a760fff4ebd18f4bf059c616, type: 3}
   m_Color: {r: 0.9748427, g: 0.9748427, b: 0.9748427, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -102,12 +102,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04e90ee0a922782479656ce2686c1f13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  keyPool: 7100000077000000650000007200000061000000730000006400000066000000
+  keyPool: 71000000770000006500000072000000
   patternLength: 10
   totalTimeLimit: 6
   perKeyTimeLimit: 0
   ui: {fileID: 0}
   debugLog: 0
+  InGamePopupUI: {fileID: 0}
 --- !u!114 &2849643063026930131
 MonoBehaviour:
   m_ObjectHideFlags: 0

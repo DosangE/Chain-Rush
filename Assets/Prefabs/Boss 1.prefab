@@ -102,7 +102,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04e90ee0a922782479656ce2686c1f13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  keyPool: 7100000077000000650000007200000061000000730000006400000066000000
+  keyPool: 71000000770000006500000072000000
   patternLength: 10
   totalTimeLimit: 5.5
   perKeyTimeLimit: 0

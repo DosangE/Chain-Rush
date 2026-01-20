@@ -32,6 +32,9 @@ public class QTEUI : MonoBehaviour
     [Tooltip("0이면 기본 sin 그대로, 1이면 더 완만(부드러움)")]
     [SerializeField, Range(0f, 1f)] private float smoothness = 0.6f;
 
+    [Header("InGameUI")]
+    [SerializeField] private PopupTextUI InGamePopupUI;
+
     [Header("Debug")]
     [SerializeField] private bool debugLog = false;
 
@@ -75,15 +78,20 @@ public class QTEUI : MonoBehaviour
 
         BuildSlotsIfNeeded(qte);
         ResetSlotsVisual(qte);
-
         UpdateTotalTimeBar(qte);
 
         if (debugLog) Debug.Log("[QTEUI] Show");
     }
 
-    public void Hide()
+    public void Hide(bool judge)
     {
         if (root != null) root.SetActive(false);
+        
+        if (InGamePopupUI != null && judge)
+            InGamePopupUI.Play("Attack Boss!");
+        else if (!judge)
+            InGamePopupUI.Play("QTE Failed!");
+
         if (debugLog) Debug.Log("[QTEUI] Hide");
     }
 

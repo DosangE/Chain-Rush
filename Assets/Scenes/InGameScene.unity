@@ -348,7 +348,7 @@ MonoBehaviour:
   removedChunksBeforeQTE: 3
   qteOnlyOnceAfterBossSpawn: 0
   debugBossAndChunk: 0
-  speedUpPopupUI: {fileID: 1791619852}
+  InGamePopupUI: {fileID: 1791619852}
   speedStages:
   - 15
   - 19
@@ -4540,6 +4540,7 @@ MonoBehaviour:
   halfTimeFlashHz: 1
   zeroTimeFlashHz: 2
   smoothness: 0.6
+  InGamePopupUI: {fileID: 1791619852}
   debugLog: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

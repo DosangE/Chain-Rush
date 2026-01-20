@@ -27,6 +27,9 @@ public class BossQTE : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool debugLog = false;
 
+    [Header("InGameUI")]
+    [SerializeField] private PopupTextUI InGamePopupUI;
+
     public bool IsRunning { get; private set; }
     public bool WasSuccess { get; private set; }
 
@@ -159,8 +162,12 @@ public class BossQTE : MonoBehaviour
         IsRunning = false;
 
         if (debugLog) Debug.Log("[BossQTE] SUCCESS");
+        
+        /*
+        보스 배리어 해제
+        */
 
-        if (ui != null) ui.Hide();
+        if (ui != null) ui.Hide(true);
     }
 
     private void Fail()
@@ -168,7 +175,11 @@ public class BossQTE : MonoBehaviour
         WasSuccess = false;
         IsRunning = false;
 
-        if (ui != null) ui.Hide();
+        /*
+        보스 레이저 공격
+        */
+
+        if (ui != null) ui.Hide(false);
     }
 
     public float GetTotalTimeRemaining()
