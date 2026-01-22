@@ -79,8 +79,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: -1
-  m_Sprite: {fileID: 21300000, guid: f9ff0607c04cec04cad93b01ecc97253, type: 3}
-  m_Color: {r: 0.9587575, g: 0.98039216, b: 0, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 9cd54188a760fff4ebd18f4bf059c616, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -108,6 +108,7 @@ MonoBehaviour:
   perKeyTimeLimit: 0
   ui: {fileID: 0}
   debugLog: 1
+  InGamePopupUI: {fileID: 0}
 --- !u!114 &2849643063026930131
 MonoBehaviour:
   m_ObjectHideFlags: 0

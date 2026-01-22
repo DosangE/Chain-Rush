@@ -23,6 +23,11 @@ public class Grappling : MonoBehaviour
     [SerializeField] private float hookSpeed = 25f;
     [SerializeField] private float visualOffset = 0.05f;
 
+    // ✅ 추가: 체인 발사(라인 시작) 오프셋 (플레이어 로컬 기준)
+    [Header("Chain Origin (Local Offset)")]
+    [Tooltip("플레이어 로컬 기준 체인 발사 지점 오프셋 (예: 손/총구 위치). X=앞(+), Y=위(+)")]
+    [SerializeField] private Vector2 chainOriginLocalOffset = new Vector2(0.2f, 0.3f);
+
     [Header("Force Detach Tuning")]
     [SerializeField]
     [Tooltip("플레이어 기준, 앵커가 이 거리만큼 뒤로 가야 강제 해제")]
@@ -106,6 +111,18 @@ public class Grappling : MonoBehaviour
     public float HookSpeed { get => hookSpeed; set => hookSpeed = value; }
     public float VisualOffset => visualOffset;
 
+    // ✅ 추가: 다른 컴포넌트들이 항상 이 값을 “시작점”으로 쓰게 만들기
+    public Vector2 ChainOriginLocalOffset => chainOriginLocalOffset;
+    public Vector2 ChainOriginWorld
+    {
+        get
+        {
+            // 로컬 오프셋을 월드로 변환
+            Vector3 w = transform.TransformPoint(new Vector3(chainOriginLocalOffset.x, chainOriginLocalOffset.y, 0f));
+            return new Vector2(w.x, w.y);
+        }
+    }
+
     public float RopeRetractSpeed { get => ropeRetractSpeed; set => ropeRetractSpeed = value; }
     public float LiftForce { get => liftForce; set => liftForce = value; }
     public float MaxLiftSpeed { get => maxLiftSpeed; set => maxLiftSpeed = value; }
@@ -167,8 +184,8 @@ public class Grappling : MonoBehaviour
     void Start()
     {
         line.positionCount = 2;
-        line.startWidth = 0.3f;
-        line.endWidth = 0.3f;
+        line.startWidth = 0.25f;
+        line.endWidth = 0.25f;
         line.useWorldSpace = true;
 
         isHookActive = false;
@@ -211,14 +228,14 @@ public class Grappling : MonoBehaviour
 
         ApplyMapSpeedScaling();
 
-        line.SetPosition(0, transform.position);
+        // ✅ 라인 시작점을 transform.position이 아니라 오프셋 적용 발사 지점으로
+        line.SetPosition(0, ChainOriginWorld);
 
         if (isAttach && joint2D.enabled) HandleAttachedState();
         else HandleDetachedState();
 
         UpdateHookVisual();
     }
-
 
     void FixedUpdate()
     {
@@ -327,7 +344,6 @@ public class Grappling : MonoBehaviour
             else ShootHook();
         }
     }
-
 
     public void OnDeath()
     {

@@ -29,18 +29,16 @@ public class GrapplingVisual : MonoBehaviour
         Vector2 hookPos;
         if (g.IsAttach && g.Joint2D.enabled)
         {
-            // 붙은 상태: 앵커(물체가 움직여도 따라감)
             hookPos = GetAnchorWorld();
             g.Hook.position = hookPos;
         }
         else
         {
-            // 발사 중: ShootHook()에서 hook.position을 계속 갱신 중
             hookPos = g.Hook.position;
         }
 
         // 2) 라인 끝은 훅 위치에서 살짝 "뒤로" 당겨서 겹침 방지
-        Vector2 start = g.transform.position;
+        Vector2 start = g.ChainOriginWorld; // ✅ 시작점 오프셋 적용
         Vector2 end = g.Hook.position;
         Vector2 dir = end - start;
 
@@ -57,14 +55,14 @@ public class GrapplingVisual : MonoBehaviour
         if (g.Line.enabled)
             g.Line.SetPosition(1, lineEnd);
 
-        // 3) 회전: "발사 중"에는 launchDir 기준 / "붙은 상태"에는 플레이어->훅 방향 기준
+        // 3) 회전: "발사 중"에는 launchDir 기준 / "붙은 상태"에는 시작점->훅 방향 기준
         if (g.IsHookActive && !g.IsAttach)
         {
             dir = g.LaunchDir.normalized;
         }
         else
         {
-            dir = (Vector2)g.Hook.position - (Vector2)g.transform.position;
+            dir = (Vector2)g.Hook.position - g.ChainOriginWorld; // ✅ 기준 통일
             if (dir.sqrMagnitude > 1e-6f) dir.Normalize();
             else dir = Vector2.right;
         }

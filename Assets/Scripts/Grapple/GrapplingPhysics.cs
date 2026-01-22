@@ -69,7 +69,6 @@ public class GrapplingPhysics : MonoBehaviour
         g.Rb.AddForce(Vector2.up * impulse, ForceMode2D.Impulse);
     }
 
-
     public float GetGravityAccel(bool isJumping = false)
     {
         if (g == null) return 0.0001f;
@@ -77,11 +76,10 @@ public class GrapplingPhysics : MonoBehaviour
         float grav = -Physics2D.gravity.y * g.Rb.gravityScale;
 
         if (isJumping)
-            grav *= g.jumpGravityMultiplier;   // ← 점프 중력만 강화
+            grav *= g.jumpGravityMultiplier;
 
         return Mathf.Max(0.0001f, grav);
     }
-
 
     public void ReleaseGrapple()
     {
@@ -97,6 +95,8 @@ public class GrapplingPhysics : MonoBehaviour
 
         g.Hook.gameObject.SetActive(false);
         g.Line.enabled = false;
-        g.Hook.position = g.transform.position;
+
+        // ✅ 원래대로: 오프셋 적용 발사 지점으로 복귀
+        g.Hook.position = g.ChainOriginWorld;
     }
 }
