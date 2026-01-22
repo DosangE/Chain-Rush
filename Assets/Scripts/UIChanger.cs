@@ -5,7 +5,7 @@ public class UIChanger : MonoBehaviour
 {
     private void Start()
     {
-        //SoundManager.instance.PlayBGM(SoundManager.instance.lobbyBGM);
+        SoundManager.instance.PlayBGM(SoundManager.instance.lobbyBGM);
     }
     public void OnClickStart()
     {

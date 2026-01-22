@@ -16,11 +16,6 @@ public class PlayerSpriteAnimator : MonoBehaviour
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-
-        if (sprites == null || sprites.Length != 5)
-        {
-            Debug.LogError("PlayerSpriteAnimator: sprites 배열은 반드시 5개여야 합니다.");
-        }
     }
 
     private void Update()

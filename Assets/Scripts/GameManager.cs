@@ -53,7 +53,8 @@ public class GameManager : MonoBehaviour
             es.AddComponent<StandaloneInputModule>();
             eventSystem = es.GetComponent<EventSystem>();
         }
-
+        if (SoundManager.instance != null)
+            SoundManager.instance.PlayBGM(SoundManager.instance.mainBGM);
         HideAllUI();
 
         // PausePopup에 CanvasGroup 안 달려있으면 자동으로 찾아보기 (선택)
@@ -68,7 +69,7 @@ public class GameManager : MonoBehaviour
         if (gameOverUI != null) gameOverUI.SetActive(false);
         if (qteUI != null) qteUI.SetActive(false);
     }
-    
+
     private void Update()
     {
         // if (State == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
