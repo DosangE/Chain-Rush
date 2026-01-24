@@ -12,6 +12,10 @@ public class Boss : MonoBehaviour, IAttackable
     [Header("QTE")]
     [SerializeField] private BossQTE qte;
 
+    [Header("Barrier")]
+    [Tooltip("보스 기본 배리어 오브젝트(보스 자식 Barrier 등). 비우면 자식에서 'Barrier' 이름으로 자동 탐색.")]
+    [SerializeField] private GameObject barrierRoot;
+
     [Header("Defeat")]
     [SerializeField] private bool destroyOnDefeat = true;
 
@@ -29,6 +33,16 @@ public class Boss : MonoBehaviour, IAttackable
 
         if (qte == null)
             Debug.LogError("[Boss] BossQTE missing.");
+
+        // Barrier 자동 탐색(선택)
+        if (barrierRoot == null)
+        {
+            Transform t = transform.Find("Barrier");
+            if (t != null) barrierRoot = t.gameObject;
+        }
+
+        // 기본 상태: 배리어 ON
+        SetBarrierActive(true);
     }
 
     public bool TryStartAttackAttempt()
@@ -48,6 +62,10 @@ public class Boss : MonoBehaviour, IAttackable
     private IEnumerator Co_RunQTE()
     {
         _qteRunning = true;
+
+        // QTE 들어갈 때는 기본적으로 배리어 ON(무적 상태 연출)
+        SetBarrierActive(true);
+
         qte.Begin();
 
         while (qte.IsRunning)
@@ -60,11 +78,17 @@ public class Boss : MonoBehaviour, IAttackable
 
         if (qte.WasSuccess)
         {
+            // ✅ QTE 성공 = 취약 상태 진입 -> 배리어 OFF
+            SetBarrierActive(false);
+
             var pa = FindObjectOfType<PlayerAttack>();
             if (pa != null) pa.GrantBossHitCredit(1);
         }
         else
         {
+            // ✅ QTE 실패 = 계속 무적 -> 배리어 ON 유지
+            SetBarrierActive(true);
+
             var ph = FindObjectOfType<PlayerHealth>();
             if (ph != null)
             {
@@ -81,6 +105,7 @@ public class Boss : MonoBehaviour, IAttackable
 
     public void OnHitByAttack()
     {
+        // (플레이어 공격 코드에서) 공격권 없으면 여기까지 안 오게 되어있음
         if (hitsToDestroy <= 0) return;
 
         hitsToDestroy--;
@@ -98,6 +123,15 @@ public class Boss : MonoBehaviour, IAttackable
             }
 
             Destroy(gameObject);
+            return;
         }
+
+    }
+
+    public void SetBarrierActive(bool active)
+    {
+        if (barrierRoot == null) return;
+        if (barrierRoot.activeSelf == active) return;
+        barrierRoot.SetActive(active);
     }
 }

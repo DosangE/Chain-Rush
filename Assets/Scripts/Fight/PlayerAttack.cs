@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq.Expressions;
 using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
@@ -67,6 +68,7 @@ public class PlayerAttack : MonoBehaviour
     public System.Action OnAttackOutEnd;
     public System.Action OnAttackReturnStart;
     public System.Action OnAttackReturnEnd;
+    private Boss boss;
     public void GrantBossHitCredit(int amount)
     {
         if (amount <= 0) return;
@@ -231,7 +233,7 @@ public class PlayerAttack : MonoBehaviour
                 playerRb.linearVelocity = postReturnVelocity;
                 playerRb.angularVelocity = 0f;
             }
-
+            boss.SetBarrierActive(true);
             PlayerActionLock.Unlock();
             isAttacking = false;
             yield break;
