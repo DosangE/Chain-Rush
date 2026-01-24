@@ -348,7 +348,7 @@ MonoBehaviour:
   removedChunksBeforeQTE: 3
   qteOnlyOnceAfterBossSpawn: 0
   debugBossAndChunk: 0
-  InGamePopupUI: {fileID: 0}
+  InGamePopupUI: {fileID: 1791619854}
   speedStages:
   - 15
   - 19
@@ -1403,8 +1403,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Speed Up!!
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 83b793e69ce6bef4e9df9f41be320efc, type: 2}
+  m_sharedMaterial: {fileID: 4738957379526522120, guid: 83b793e69ce6bef4e9df9f41be320efc, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1428,7 +1428,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 52.3
+  m_fontSize: 51
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2202,12 +2202,16 @@ MonoBehaviour:
   jumpSprite: {fileID: 7460046300004610927, guid: 6c5677c58d9e6c64dad057f38dd87702, type: 3}
   grappleSprite: {fileID: 7460046300004610927, guid: 6c5677c58d9e6c64dad057f38dd87702, type: 3}
   attackOutFrames:
-  - {fileID: 21300000, guid: addaa554b97480c4795bca3a3cfadc08, type: 3}
-  attackOutFps: 18
-  attackOutSprite: {fileID: 0}
-  attackReturnFrames:
-  - {fileID: 21300000, guid: addaa554b97480c4795bca3a3cfadc08, type: 3}
-  attackReturnFps: 18
+  - {fileID: 21300000, guid: 505abdf4f0b8db141a4de78d0b1cf915, type: 3}
+  - {fileID: 21300000, guid: 06e40f9bd940d1245a819ad5e97feade, type: 3}
+  - {fileID: 21300000, guid: 985ae582d38980d49adaa4dabd9dbb4b, type: 3}
+  - {fileID: 21300000, guid: 79f9f68450a1b3841883eefbb9965c58, type: 3}
+  - {fileID: -7575591688087331370, guid: 55bc5b37b420dc643b5d70038c31f0c9, type: 3}
+  - {fileID: 21300000, guid: cb9b9fee912268040bc78bc264fe757f, type: 3}
+  - {fileID: 21300000, guid: 1d0b332156a9f3d4f8cdc5b4dd088f07, type: 3}
+  attackOutFrameTime: 0.007
+  attackOutSprite: {fileID: 7460046300004610927, guid: 6c5677c58d9e6c64dad057f38dd87702, type: 3}
+  attackReturnFrameTime: 0.007
   jumpUpSprite: {fileID: 0}
   jumpDownSprite: {fileID: 0}
   jumpUpDownThreshold: 0.05

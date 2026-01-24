@@ -20,12 +20,13 @@ public class PlayerSpriteStateController : MonoBehaviour
     [Header("Attack Out (fly to target)")]
     [Tooltip("AttackOut도 프레임으로 돌리고 싶으면 여기에 넣어라. 비워두면 attackOutSprite(단일) 사용.")]
     [SerializeField] private Sprite[] attackOutFrames;
-    [SerializeField] private float attackOutFps = 18f;
+    [Tooltip("AttackOut 한 프레임당 시간(초). 예: 0.06f")]
+    [SerializeField] private float attackOutFrameTime = 0.06f;
     [SerializeField] private Sprite attackOutSprite;
-
-    [Header("Attack Return (back to start)")]
-    [SerializeField] private Sprite[] attackReturnFrames;
-    [SerializeField] private float attackReturnFps = 18f;
+    
+    [Header("Attack Return (come back)")]
+    [Tooltip("AttackReturn 한 프레임당 시간(초). 예: 0.06f")]
+    [SerializeField] private float attackReturnFrameTime = 0.06f;
 
     [Header("Optional: Jump Up/Down")]
     [SerializeField] private Sprite jumpUpSprite;
@@ -136,7 +137,7 @@ public class PlayerSpriteStateController : MonoBehaviour
     {
         isAttackReturn = true;
 
-        if (attackReturnFrames != null && attackReturnFrames.Length > 0)
+        if (attackOutFrames != null && attackOutFrames.Length > 0)
         {
             if (returnCo != null) StopCoroutine(returnCo);
             returnCo = StartCoroutine(CoLoopAttackReturnFrames());
@@ -202,7 +203,7 @@ public class PlayerSpriteStateController : MonoBehaviour
                 break;
 
             case VisualState.AttackReturn:
-                // 프레임이 없으면 유지(원하면 단일 sprite를 추가로 만들어도 됨)
+                // 프레임은 코루틴이 돌림 (없으면 유지)
                 break;
         }
     }
@@ -211,6 +212,8 @@ public class PlayerSpriteStateController : MonoBehaviour
     {
         if (jumpUpSprite != null || jumpDownSprite != null)
         {
+            // NOTE: 너 코드에 linearVelocity를 쓰고 있는데, 일반 Unity2D는 rb.velocity가 보통이야.
+            // Grappling.Rb 타입이 뭐냐에 따라 맞는 프로퍼티가 달라질 수 있어.
             float vy = grappling.Rb != null ? grappling.Rb.linearVelocity.y : 0f;
 
             if (vy > jumpUpDownThreshold && jumpUpSprite != null)
@@ -235,11 +238,14 @@ public class PlayerSpriteStateController : MonoBehaviour
     {
         if (runAnimator != null) runAnimator.enabled = false;
 
-        float frameTime = 1f / Mathf.Max(1f, attackOutFps);
+        float frameTime = Mathf.Max(0.0001f, attackOutFrameTime);
         int idx = 0;
 
         while (true)
         {
+            if (attackOutFrames == null || attackOutFrames.Length == 0)
+                yield break;
+
             spriteRenderer.sprite = attackOutFrames[idx];
             idx = (idx + 1) % attackOutFrames.Length;
             yield return new WaitForSeconds(frameTime);
@@ -250,13 +256,16 @@ public class PlayerSpriteStateController : MonoBehaviour
     {
         if (runAnimator != null) runAnimator.enabled = false;
 
-        float frameTime = 1f / Mathf.Max(1f, attackReturnFps);
+        float frameTime = Mathf.Max(0.0001f, attackReturnFrameTime);
         int idx = 0;
 
         while (true)
         {
-            spriteRenderer.sprite = attackReturnFrames[idx];
-            idx = (idx + 1) % attackReturnFrames.Length;
+            if (attackOutFrames == null || attackOutFrames.Length == 0)
+                yield break;
+
+            spriteRenderer.sprite = attackOutFrames[idx];
+            idx = (idx + 1) % attackOutFrames.Length;
             yield return new WaitForSeconds(frameTime);
         }
     }

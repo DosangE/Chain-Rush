@@ -27,9 +27,6 @@ public class BossQTE : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool debugLog = false;
 
-    [Header("InGameUI")]
-    [SerializeField] private PopupTextUI InGamePopupUI;
-
     public bool IsRunning { get; private set; }
     public bool WasSuccess { get; private set; }
 
