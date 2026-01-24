@@ -934,19 +934,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 224212831}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1871294070}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &224212831
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4243,7 +4231,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1443420519}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: daeeec0d7cb6f5340bd6a501a669c4b1, type: 3}
+  m_Script: {fileID: 11500000, guid: e085720d072b725448ec1419138b049a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   bgmVolumeSlider: {fileID: 1427362085}
@@ -4640,7 +4628,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1510319420}
-  - component: {fileID: 1510319419}
+  - component: {fileID: 1510319422}
   m_Layer: 0
   m_Name: SoundManager
   m_TagString: Untagged
@@ -4648,25 +4636,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1510319419
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1510319418}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 05434856138afd8479753e1b9af8efd8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bgmSource: {fileID: 1211070624}
-  sfxSource: {fileID: 1182276864}
-  lobbyBGM: {fileID: 8300000, guid: 86f4688015bf01f49b31b6587c9ce514, type: 3}
-  mainBGM: {fileID: 8300000, guid: d00c1c37b63eefd4f95a4b67fb4832c9, type: 3}
-  clickSFX: {fileID: 0}
-  hitSFX: {fileID: 0}
-  mixer: {fileID: 24100000, guid: 62b7c4fee48adcc45b34a0a036fca664, type: 2}
 --- !u!4 &1510319420
 Transform:
   m_ObjectHideFlags: 0
@@ -4684,6 +4653,25 @@ Transform:
   - {fileID: 1182276863}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1510319422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1510319418}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 564b8ce801ec05945b1f604f9dc123a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bgmSource: {fileID: 1211070624}
+  sfxSource: {fileID: 1182276864}
+  lobbyBGM: {fileID: 8300000, guid: 86f4688015bf01f49b31b6587c9ce514, type: 3}
+  mainBGM: {fileID: 8300000, guid: d00c1c37b63eefd4f95a4b67fb4832c9, type: 3}
+  clickSFX: {fileID: 0}
+  hitSFX: {fileID: 0}
+  mixer: {fileID: 24100000, guid: 62b7c4fee48adcc45b34a0a036fca664, type: 2}
 --- !u!1 &1611240729
 GameObject:
   m_ObjectHideFlags: 0
@@ -5059,7 +5047,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1871294070}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 623bd14cc19465c4b99f2661e0ce269c, type: 3}
+  m_Script: {fileID: 11500000, guid: 75040f60b88dda24ebd2e2571e48e18a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1886853495

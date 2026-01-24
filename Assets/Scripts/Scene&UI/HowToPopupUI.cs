@@ -18,7 +18,6 @@ public class HowToPopupUI : MonoBehaviour
 
     private void Reset()
     {
-        // 실수 방지용: popupRoot를 자동으로 자기 자신으로
         popupRoot = gameObject;
     }
 
@@ -29,10 +28,9 @@ public class HowToPopupUI : MonoBehaviour
         if (btnNext != null) btnNext.onClick.AddListener(NextPage);
         if (btnClose != null) btnClose.onClick.AddListener(Close);
 
-        // 시작 상태: 닫힌 상태 + 1페이지로 초기화
+        // 페이지 상태만 초기화 (여기서 popupRoot를 끄지 않음!)
         pageIndex = 0;
         ApplyPage();
-        if (popupRoot != null) popupRoot.SetActive(false);
     }
 
     /// <summary>
@@ -42,12 +40,15 @@ public class HowToPopupUI : MonoBehaviour
     {
         pageIndex = 0;
         ApplyPage();
-        if (popupRoot != null) popupRoot.SetActive(true);
+
+        if (popupRoot != null && !popupRoot.activeSelf)
+            popupRoot.SetActive(true);
     }
 
     public void Close()
     {
-        if (popupRoot != null) popupRoot.SetActive(false);
+        if (popupRoot != null && popupRoot.activeSelf)
+            popupRoot.SetActive(false);
     }
 
     private void NextPage()
@@ -64,7 +65,6 @@ public class HowToPopupUI : MonoBehaviour
     private void PrevPage()
     {
         if (pages == null || pages.Length == 0) return;
-
         if (pageIndex <= 0) return;
 
         pageIndex--;
@@ -75,21 +75,17 @@ public class HowToPopupUI : MonoBehaviour
     {
         if (pages == null || pages.Length == 0) return;
 
-        // 안전 처리: 범위 클램프
         if (pageIndex < 0) pageIndex = 0;
         if (pageIndex > pages.Length - 1) pageIndex = pages.Length - 1;
 
-        // 페이지 on/off
         for (int i = 0; i < pages.Length; i++)
         {
             if (pages[i] != null)
                 pages[i].SetActive(i == pageIndex);
         }
 
-        // 버튼 활성/비활성 규칙
         int last = pages.Length - 1;
-
-        if (btnPrev != null) btnPrev.interactable = pageIndex > 0;      // 첫 페이지면 비활성
-        if (btnNext != null) btnNext.interactable = pageIndex < last;   // 마지막 페이지면 비활성
+        if (btnPrev != null) btnPrev.interactable = pageIndex > 0;
+        if (btnNext != null) btnNext.interactable = pageIndex < last;
     }
 }
