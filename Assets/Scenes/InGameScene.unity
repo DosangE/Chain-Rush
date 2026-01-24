@@ -4593,7 +4593,7 @@ MonoBehaviour:
   halfTimeFlashHz: 1
   zeroTimeFlashHz: 2
   smoothness: 0.6
-  InGamePopupUI: {fileID: 0}
+  InGamePopupUI: {fileID: 1791619854}
   debugLog: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
