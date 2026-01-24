@@ -3,7 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class PlayerSpriteAnimator : MonoBehaviour
 {
-    [Header("Sprites (size must be 15)")]
+    [Header("Sprites")]
     [SerializeField] private Sprite[] sprites = new Sprite[15];
 
     [Header("Animation Settings")]

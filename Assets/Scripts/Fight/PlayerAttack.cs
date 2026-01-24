@@ -62,9 +62,11 @@ public class PlayerAttack : MonoBehaviour
 
     private bool isAttacking;
     private float nextAttackAllowedTime;
-
     private int bossHitCredit = 0;
-
+    public System.Action OnAttackOutStart;
+    public System.Action OnAttackOutEnd;
+    public System.Action OnAttackReturnStart;
+    public System.Action OnAttackReturnEnd;
     public void GrantBossHitCredit(int amount)
     {
         if (amount <= 0) return;
@@ -189,8 +191,13 @@ public class PlayerAttack : MonoBehaviour
             AttackHookOn();
             yield return ChainShootVisual(bossPoint, chainShootDuration);
 
+            OnAttackOutStart?.Invoke();
+
             Vector3 from = transform.position;
             yield return MovePlayerKeepingChain(from, bossPoint, flyOutDuration, bossPoint);
+
+
+
 
             // ✅ 보스 HP 1 감소(공격권 1회 사용)
             boss.OnHitByAttack();
@@ -198,8 +205,10 @@ public class PlayerAttack : MonoBehaviour
                 yield return HitSlowMo(hitTimeScale, hitSlowMoDurationRealtime);
             AttackHookOff();
             ChainOff();
-
+            OnAttackOutEnd?.Invoke();
             // 복귀
+            OnAttackReturnStart?.Invoke();
+
             Vector2 returnPoint = new Vector2(startX, returnYWorld);
             if (returnDuration <= 0f)
             {
@@ -209,6 +218,9 @@ public class PlayerAttack : MonoBehaviour
             {
                 yield return MovePlayerArcKeepingChain(transform.position, returnPoint, returnDuration, returnArcHeight, bossPoint);
             }
+
+            OnAttackReturnEnd?.Invoke();
+
 
             if (playerCollider != null)
                 playerCollider.enabled = prevColliderEnabled;
@@ -257,8 +269,10 @@ public class PlayerAttack : MonoBehaviour
         AttackHookOn();
         yield return ChainShootVisual(targetPoint, chainShootDuration);
 
+        OnAttackOutStart?.Invoke();
         Vector3 from2 = transform.position;
         yield return MovePlayerKeepingChain(from2, targetPoint, flyOutDuration, targetPoint);
+
 
         if (enemy != null) enemy.OnHitByAttack();
         else Destroy(hitCol.gameObject);
@@ -270,10 +284,14 @@ public class PlayerAttack : MonoBehaviour
             yield return HitSlowMo(hitTimeScale, hitSlowMoDurationRealtime);
 
         yield return HoldWithChain(targetPoint, hitHoldDuration);
+        OnAttackOutEnd?.Invoke();
+        OnAttackReturnStart?.Invoke();
 
         Vector2 returnPoint2 = new Vector2(startX2, returnYWorld);
         if (returnDuration <= 0f) transform.position = returnPoint2;
         else yield return MovePlayerArcKeepingChain(transform.position, returnPoint2, returnDuration, returnArcHeight, targetPoint);
+
+        OnAttackReturnEnd?.Invoke();
 
         ChainOff();
         AttackHookOff();
