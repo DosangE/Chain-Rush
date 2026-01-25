@@ -14,6 +14,8 @@ public class SoundManager : MonoBehaviour
     public AudioClip mainBGM;
     public AudioClip clickSFX;
     public AudioClip hitSFX;
+    public AudioClip jumpSFX;
+    public AudioClip grappleAttachSFX;
 
     [Header("Audio Mixer")] [SerializeField]
     private AudioMixer mixer;

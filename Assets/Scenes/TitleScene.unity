@@ -3008,7 +3008,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 0.3
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -4613,6 +4613,8 @@ MonoBehaviour:
   mainBGM: {fileID: 8300000, guid: d00c1c37b63eefd4f95a4b67fb4832c9, type: 3}
   clickSFX: {fileID: 0}
   hitSFX: {fileID: 0}
+  jumpSFX: {fileID: 0}
+  grappleAttachSFX: {fileID: 0}
   mixer: {fileID: 24100000, guid: 62b7c4fee48adcc45b34a0a036fca664, type: 2}
 --- !u!1 &1611240729
 GameObject:

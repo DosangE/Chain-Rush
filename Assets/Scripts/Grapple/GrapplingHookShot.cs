@@ -94,6 +94,8 @@ public class GrapplingHookShot : MonoBehaviour
             g.IsHookActive = false;
             g.Hook.position = hit.point;
 
+            g.PlayGrappleAttachSFX();
+
             // ====== (2) 붙는 즉시 스윙 속도 정리 ======
             if (instantSwingOnAttach)
             {

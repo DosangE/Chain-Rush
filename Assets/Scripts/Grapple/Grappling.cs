@@ -68,6 +68,11 @@ public class Grappling : MonoBehaviour
     [Header("Hook Visual")]
     [SerializeField] private float hookAngleOffset = 0f;
 
+    [Header("SFX")]
+    [SerializeField] private AudioClip jumpSFX;
+    [SerializeField] private AudioClip grappleAttachSFX;
+
+
     private bool pendingLeftClick = false;
 
     private bool isDead = false;
@@ -327,6 +332,7 @@ public class Grappling : MonoBehaviour
 
             if (isGrounded)
             {
+                PlayJumpSFX();
                 Jump();
             }
             else
@@ -361,4 +367,14 @@ public class Grappling : MonoBehaviour
 
         ReleaseGrapple();
     }
+    private void PlaySFX(AudioClip clip)
+    {
+        if (clip == null) return;
+        if (SoundManager.instance == null) return;   // TitleScene에서 생성 안 됐으면 null 가능
+        SoundManager.instance.PlaySFX(clip);         // 네 SoundManager 함수 그대로 사용
+    }
+
+    public void PlayJumpSFX() => PlaySFX(jumpSFX);
+    public void PlayGrappleAttachSFX() => PlaySFX(grappleAttachSFX);
+
 }
