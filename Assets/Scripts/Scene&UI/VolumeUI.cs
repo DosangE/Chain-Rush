@@ -21,11 +21,11 @@ public class VolumeUI : MonoBehaviour
         }
         
         bgmVolumeSlider.onValueChanged.AddListener(SetBGMVolume);
-        //sfxVolumeSlider.onValueChanged.AddListener(SetSFXVolume);
+        sfxVolumeSlider.onValueChanged.AddListener(SetSFXVolume);
         
         // 초기 볼륨 설정
         bgmVolumeSlider.value = SoundManager.instance.GetBGMVolume();
-        //sfxVolumeSlider.value = SoundManager.instance.GetSFXVolume();
+        sfxVolumeSlider.value = SoundManager.instance.GetSFXVolume();
     }
 
     private void SetBGMVolume(float volume)

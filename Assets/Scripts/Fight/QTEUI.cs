@@ -12,15 +12,18 @@ public class QTEUI : MonoBehaviour
     [SerializeField] private Transform slotsRoot;
     [SerializeField] private GameObject slotPrefab;
 
-    [Header("Timer Bar (Right -> Left)")]
-    [Tooltip("Image Type=Filled, Fill Method=Horizontal, Fill Origin=Right 로 설정된 BarFill Image")]
-    [SerializeField] private Image totalTimeBarFill;
+    [Header("Timer Bar")]
+    [Tooltip("항상 보이는 바(베이스). 검은색/프레임 이미지 등. Type=Simple(or Sliced) 권장")]
+    [SerializeField] private Image totalTimeBarBackground;
+
+    [Tooltip("시간이 지날수록 '오른쪽부터 차오르는' 오버레이. Image Type=Filled, Fill Method=Horizontal, Fill Origin=Right")]
+    [SerializeField] private Image totalTimeBarElapsedOverlay;
 
     [Tooltip("원하면 숫자도 같이 표시(TMP). 없어도 됨.")]
     [SerializeField] private TMP_Text totalTimeTextOptional;
 
-    [Header("Timer Bar Color FX")]
-    [SerializeField] private Color safeColor = Color.white;
+    [Header("Timer Bar Color FX (Overlay에 적용)")]
+    [SerializeField] private Color safeColor = Color.black;
     [SerializeField] private Color dangerColor = Color.red;
 
     [Tooltip("시간 절반(50%)에서 1초 주기(1Hz)")]
@@ -38,7 +41,7 @@ public class QTEUI : MonoBehaviour
     private class SlotView
     {
         public GameObject go;
-        public Graphic[] graphics;   // Image/Text/TMP 등
+        public Graphic[] graphics;
         public TMP_Text tmp;
         public Text legacyText;
 
@@ -50,7 +53,6 @@ public class QTEUI : MonoBehaviour
 
         public void SetVisible(bool on)
         {
-            // GameObject는 끄지 않는다(그리드 자리 고정)
             if (graphics != null)
             {
                 for (int i = 0; i < graphics.Length; i++)
@@ -91,7 +93,6 @@ public class QTEUI : MonoBehaviour
         UpdateTotalTimeBar(qte);
     }
 
-    // 정답 입력: 앞칸을 "빈칸"으로 (자리 고정)
     public void OnCorrectPopFront(BossQTE qte)
     {
         if (_nextHideIndex < _slots.Count)
@@ -101,7 +102,6 @@ public class QTEUI : MonoBehaviour
         }
     }
 
-    // 오답: 전부 다시 보이게 + 라벨 복구
     public void OnWrongReset(BossQTE qte)
     {
         ResetSlotsVisual(qte);
@@ -130,11 +130,8 @@ public class QTEUI : MonoBehaviour
 
             var view = new SlotView();
             view.go = slotGO;
-
-            // 슬롯 내부의 모든 Graphic을 on/off 해서 빈칸화
             view.graphics = slotGO.GetComponentsInChildren<Graphic>(true);
 
-            // 라벨 텍스트(TMP 우선)
             view.tmp = slotGO.GetComponentInChildren<TMP_Text>(true);
             if (view.tmp == null) view.legacyText = slotGO.GetComponentInChildren<Text>(true);
 
@@ -156,52 +153,44 @@ public class QTEUI : MonoBehaviour
         }
     }
 
-    // ===== Timer Bar 업데이트 (우->좌 감소 + 임박 색 효과) =====
+    // ===== Timer Bar 업데이트 =====
+    // - 베이스(totalTimeBarBackground)는 고정
+    // - 오버레이(totalTimeBarElapsedOverlay)가 "오른쪽부터 차오르게" (elapsed 증가)
     private void UpdateTotalTimeBar(BossQTE qte)
     {
-        if (totalTimeBarFill == null) return;
+        if (totalTimeBarElapsedOverlay == null) return;
 
         float limit = qte.TotalTimeLimit;
         float remain = qte.GetTotalTimeRemaining();
 
-        // fillAmount 계산
-        float ratio;
+        float remainRatio;
+        if (limit <= 0f) remainRatio = 1f;
+        else remainRatio = Mathf.Clamp01(remain / limit);
+
+        // 경과(Elapsed) = 1 - 남은비율
+        float elapsedRatio = 1f - remainRatio;
+        totalTimeBarElapsedOverlay.fillAmount = elapsedRatio;
+
+        // 오버레이 색 효과(원하면 그대로, 싫으면 safeColor만 쓰면 됨)
         if (limit <= 0f)
         {
-            ratio = 1f;
+            totalTimeBarElapsedOverlay.color = safeColor;
         }
-        else
-        {
-            ratio = Mathf.Clamp01(remain / limit);
-        }
+        // else if (remainRatio > 0.5f)
+        // {
+        //     totalTimeBarElapsedOverlay.color = safeColor;
+        // }
+        // else
+        // {
+        //     float t = Mathf.InverseLerp(0.5f, 0f, remainRatio); // 0(50%) ~ 1(0%)
+        //     float hz = Mathf.Lerp(halfTimeFlashHz, zeroTimeFlashHz, t);
 
-        totalTimeBarFill.fillAmount = ratio;
+        //     float s = Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f) * 0.5f + 0.5f;
+        //     float eased = Mathf.SmoothStep(0f, 1f, s);
+        //     float blend = Mathf.Lerp(s, eased, smoothness);
 
-        // 색 임박 효과
-        if (limit <= 0f)
-        {
-            totalTimeBarFill.color = safeColor;
-        }
-        else if (ratio > 0.5f)
-        {
-            // 절반 초과: 안전색 고정
-            totalTimeBarFill.color = safeColor;
-        }
-        else
-        {
-            // 절반 이하부터: 1Hz -> 2Hz로 점점 빨라짐
-            float t = Mathf.InverseLerp(0.5f, 0f, ratio); // 0(50%) ~ 1(0%)
-            float hz = Mathf.Lerp(halfTimeFlashHz, zeroTimeFlashHz, t);
-
-            // 부드러운 깜빡임(0~1)
-            float s = Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f) * 0.5f + 0.5f;
-
-            // 더 부드럽게(중간을 길게/완만하게)
-            float eased = Mathf.SmoothStep(0f, 1f, s);
-            float blend = Mathf.Lerp(s, eased, smoothness);
-
-            totalTimeBarFill.color = Color.Lerp(safeColor, dangerColor, blend);
-        }
+        //     totalTimeBarElapsedOverlay.color = Color.Lerp(safeColor, dangerColor, blend);
+        // }
 
         // (선택) 숫자 표시
         if (totalTimeTextOptional != null)

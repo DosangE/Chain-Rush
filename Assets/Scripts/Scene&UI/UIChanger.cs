@@ -9,13 +9,13 @@ public class UIChanger : MonoBehaviour
     }
     public void OnClickStart()
     {
-        //SoundManager.instance.PlayClickSound();
+        SoundManager.instance.PlayClickSound();
         SceneManager.LoadScene("InGameScene");
     }
 
     public void OnClickQuit()
     {
-        //SoundManager.instance.PlayClickSound();
+        SoundManager.instance.PlayClickSound();
         Application.Quit();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

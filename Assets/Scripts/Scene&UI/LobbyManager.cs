@@ -31,16 +31,18 @@ public class LobbyManager : MonoBehaviour
 
     private void OnClickHowToPlay()
     {
+        SoundManager.instance.PlayClickSound();
         howToPopup.Open();
     }
 
     private void OnClickSettings()
     {
         settingsPopup.gameObject.SetActive(true);
-
+        SoundManager.instance.PlayClickSound();
     }
-    private void Close()
+    public void Close()
     {
         settingsPopup.gameObject.SetActive(false);
+        SoundManager.instance.PlayClickSound();
     }
 }

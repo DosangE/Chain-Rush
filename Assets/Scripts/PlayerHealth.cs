@@ -53,7 +53,6 @@ public class PlayerHealth : MonoBehaviour
         currentHp = Mathf.Max(0, currentHp - amount);
         Debug.Log($"[HP] -{amount} => {currentHp}/{maxHp}");
         OnHpChanged?.Invoke(currentHp, maxHp);
-
         if (currentHp <= 0)
         {
             Debug.Log("[HP] died");
@@ -75,7 +74,6 @@ public class PlayerHealth : MonoBehaviour
         currentHp = Mathf.Max(0, currentHp - amount);
         Debug.Log($"[HP] -{amount} => {currentHp}/{maxHp}");
         OnHpChanged?.Invoke(currentHp, maxHp);
-
         if (currentHp <= 0)
         {
             Debug.Log("[HP] died");
@@ -116,4 +114,5 @@ public class PlayerHealth : MonoBehaviour
         yield return new WaitForSeconds(invincibleTime);
         IsInvincible = false;
     }
+
 }

@@ -12,6 +12,10 @@ public class PlayerDamageReceiver : MonoBehaviour
     [SerializeField] private LayerMask damagingLayers;
 
     [SerializeField] private float hitCooldown = 0.2f;
+
+    [Header("SFX")]
+    [SerializeField] private AudioClip HitSFX;
+    public void PlayHitSFX() => PlaySFX(HitSFX);
     private float nextAllowedTime;
 
     private void Awake()
@@ -24,6 +28,7 @@ public class PlayerDamageReceiver : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+
         TryApplyDamage(collision.collider);
     }
 
@@ -42,6 +47,8 @@ public class PlayerDamageReceiver : MonoBehaviour
 
         bool damaged = health.TakeDamage(touchDamage);
         if (!damaged) return;
+        
+        PlayHitSFX();
 
         nextAllowedTime = Time.time + hitCooldown;
 
@@ -60,5 +67,11 @@ public class PlayerDamageReceiver : MonoBehaviour
         {
             GameManager.Instance.GameOver();
         }
+    }
+    private void PlaySFX(AudioClip clip)
+    {
+        if (clip == null) return;
+        if (SoundManager.instance == null) return;   // TitleScene에서 생성 안 됐으면 null 가능
+        SoundManager.instance.PlaySFX(clip);         // 네 SoundManager 함수 그대로 사용
     }
 }

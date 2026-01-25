@@ -71,6 +71,12 @@ public class MapManager : MonoBehaviour
     private bool waitUntilBossHitConsumed = false;
     private PlayerAttack cachedPlayerAttack = null;
 
+    // =========================
+    // ✅ NEW: "현재 살아있는 청크 패턴" 추적
+    // =========================
+    private readonly Queue<int> chunkPatternIndices = new Queue<int>(); // chunks와 동일 순서
+    private readonly HashSet<int> activePatternIndices = new HashSet<int>(); // 현재 스폰되어 살아있는 패턴 인덱스들
+
 
     void Start()
     {
@@ -185,7 +191,8 @@ public class MapManager : MonoBehaviour
     {
         if (mapPatterns == null || mapPatterns.Count == 0) return;
 
-        GameObject prefab = mapPatterns[0];
+        int index = 0;
+        GameObject prefab = mapPatterns[index];
         if (prefab == null) return;
 
         GameObject chunk = Instantiate(prefab, Vector3.zero, Quaternion.identity);
@@ -207,6 +214,10 @@ public class MapManager : MonoBehaviour
         lastEndPoint = pattern.endPoint;
         chunks.Enqueue(chunk);
 
+        // ✅ NEW: 패턴 인덱스 추적 등록
+        chunkPatternIndices.Enqueue(index);
+        activePatternIndices.Add(index);
+
         spawnedChunkCount++;
         TrySpawnBossIfReady();
     }
@@ -216,7 +227,7 @@ public class MapManager : MonoBehaviour
         if (mapPatterns == null || mapPatterns.Count == 0) return;
         if (lastEndPoint == null) return;
 
-        int index = DecideNextPatternIndex(); // ✅ 보스 중 평지 강제 제거된 랜덤
+        int index = DecideNextPatternIndex(); // ✅ NEW: "현재 살아있는 패턴" 제외 로직 적용
         GameObject prefab = mapPatterns[index];
         if (prefab == null) return;
 
@@ -241,6 +252,10 @@ public class MapManager : MonoBehaviour
         lastEndPoint = pattern.endPoint;
         chunks.Enqueue(chunk);
 
+        // ✅ NEW: 패턴 인덱스 추적 등록
+        chunkPatternIndices.Enqueue(index);
+        activePatternIndices.Add(index);
+
         spawnedChunkCount++;
         TrySpawnBossIfReady();
 
@@ -250,9 +265,38 @@ public class MapManager : MonoBehaviour
         }
     }
 
+    // =========================
+    // ✅ NEW: "활성 청크에서 사용 중인 패턴은 제외" 룰
+    // =========================
     private int DecideNextPatternIndex()
     {
-        return Random.Range(0, mapPatterns.Count);
+        int count = mapPatterns != null ? mapPatterns.Count : 0;
+        if (count <= 0) return 0;
+
+        // 후보(=현재 active에 없는 인덱스) 만들기
+        List<int> candidates = null;
+
+        // activePatternIndices가 너무 커질 일은 없지만, 안전하게 count 기준으로 필터
+        for (int i = 0; i < count; i++)
+        {
+            if (mapPatterns[i] == null) continue; // null 프리팹은 제외
+            if (activePatternIndices.Contains(i)) continue;
+
+            candidates ??= new List<int>(count);
+            candidates.Add(i);
+        }
+
+        // 후보가 있으면 그 중 랜덤
+        if (candidates != null && candidates.Count > 0)
+        {
+            return candidates[Random.Range(0, candidates.Count)];
+        }
+
+        // ✅ 예외 처리:
+        // 모든 패턴이 현재 active(=maxChunks가 패턴 수보다 크거나 같을 때)라면
+        // "겹치지 않게"가 불가능하므로 그냥 랜덤 fallback
+        // (원하면 여기서 '가장 오래된 active를 제외하고 뽑기' 같은 정책도 가능)
+        return Random.Range(0, count);
     }
 
     void RemoveOldChunk()
@@ -260,6 +304,14 @@ public class MapManager : MonoBehaviour
         while (chunks.Count > maxChunks)
         {
             var old = chunks.Dequeue();
+
+            // ✅ NEW: old와 동일 순서로 패턴 인덱스도 제거
+            if (chunkPatternIndices.Count > 0)
+            {
+                int removedIndex = chunkPatternIndices.Dequeue();
+                activePatternIndices.Remove(removedIndex);
+            }
+
             if (old != null)
             {
                 Destroy(old);
@@ -319,7 +371,6 @@ public class MapManager : MonoBehaviour
             bossPrefabFinal;
 
         GameObject bossObj = Instantiate(prefab, spawnPos, Quaternion.identity);
-
 
         spawnedBoss = bossObj.GetComponent<Boss>();
         if (spawnedBoss == null)

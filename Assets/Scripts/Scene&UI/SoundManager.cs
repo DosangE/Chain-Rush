@@ -9,7 +9,7 @@ public class SoundManager : MonoBehaviour
     [Header("Audio Sources")] public AudioSource bgmSource;
     public AudioSource sfxSource;
 
-    [Header("Audio Clips")] 
+    [Header("Audio Clips")]
     public AudioClip lobbyBGM;
     public AudioClip mainBGM;
     public AudioClip clickSFX;
@@ -17,9 +17,11 @@ public class SoundManager : MonoBehaviour
     public AudioClip jumpSFX;
     public AudioClip grappleAttachSFX;
 
-    [Header("Audio Mixer")] [SerializeField]
+    [Header("Audio Mixer")]
+    [SerializeField]
     private AudioMixer mixer;
 
+    public void PlayClickSound() => PlaySFX(clickSFX);
     private void Awake()
     {
         if (instance == null)
@@ -42,7 +44,7 @@ public class SoundManager : MonoBehaviour
             float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 0f);
             mixer.SetFloat("BGM", bgmVolume);
             mixer.SetFloat("SFX", sfxVolume);
-        } 
+        }
     }
 
     public void PlayBGM(AudioClip clip)
@@ -57,9 +59,6 @@ public class SoundManager : MonoBehaviour
         bgmSource.loop = true;
         bgmSource.Play();
     }
-
-    public void PlayClickSound() => PlaySFX(clickSFX);
-    public void PlayHitSound() => PlaySFX(hitSFX);
 
     public void PlaySFX(AudioClip clip)
     {

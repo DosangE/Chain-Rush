@@ -26,6 +26,10 @@ public class BossQTE : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private bool debugLog = false;
+    [Header("SFX")]
+    [SerializeField] private AudioClip HitSFX;
+
+    public void PlayHitSFX() => PlaySFX(HitSFX);
 
     public bool IsRunning { get; private set; }
     public bool WasSuccess { get; private set; }
@@ -78,6 +82,7 @@ public class BossQTE : MonoBehaviour
         // 전체 시간 제한 체크
         if (totalTimeLimit > 0f && now - _startTimeUnscaled > totalTimeLimit)
         {
+            PlayHitSFX();
             if (debugLog) Debug.Log("[BossQTE] FAIL (total time limit)");
             Fail();
             return;
@@ -159,7 +164,7 @@ public class BossQTE : MonoBehaviour
         IsRunning = false;
 
         if (debugLog) Debug.Log("[BossQTE] SUCCESS");
-        
+
         /*
         보스 배리어 해제
         */
@@ -191,5 +196,11 @@ public class BossQTE : MonoBehaviour
         if (perKeyTimeLimit <= 0f) return float.PositiveInfinity;
         float remain = perKeyTimeLimit - (Time.unscaledTime - _lastInputTimeUnscaled);
         return Mathf.Max(0f, remain);
+    }
+    private void PlaySFX(AudioClip clip)
+    {
+        if (clip == null) return;
+        if (SoundManager.instance == null) return;   // TitleScene에서 생성 안 됐으면 null 가능
+        SoundManager.instance.PlaySFX(clip);         // 네 SoundManager 함수 그대로 사용
     }
 }

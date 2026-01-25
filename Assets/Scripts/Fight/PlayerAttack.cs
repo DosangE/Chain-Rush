@@ -491,5 +491,10 @@ public class PlayerAttack : MonoBehaviour
     {
         return bossHitCredit > 0;
     }
-
+    private void PlaySFX(AudioClip clip)
+    {
+        if (clip == null) return;
+        if (SoundManager.instance == null) return;   // TitleScene에서 생성 안 됐으면 null 가능
+        SoundManager.instance.PlaySFX(clip);         // 네 SoundManager 함수 그대로 사용
+    }
 }
