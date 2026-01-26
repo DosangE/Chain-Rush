@@ -125,7 +125,8 @@ MonoBehaviour:
   totalTimeLimit: 8
   perKeyTimeLimit: 0
   ui: {fileID: 0}
-  debugLog: 1
+  debugLog: 0
+  HitSFX: {fileID: 8300000, guid: 1e9f446d423ce374f930708666a3b5ec, type: 3}
 --- !u!114 &2849643063026930131
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -138,11 +139,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f24b49df60d6f64095ac05ab10646ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hitsToDestroy: 3
+  hitsToDestroy: 5
   attackCooldown: 5
   qte: {fileID: 5217854198799912540}
   barrierRoot: {fileID: 4557833986033640717}
   destroyOnDefeat: 1
+  defeatParticle: {fileID: 2433282508523890284, guid: 3ef3ae421f71c5c4e97fe12dc2fc6312, type: 3}
 --- !u!1 &3522304608113979696
 GameObject:
   m_ObjectHideFlags: 0

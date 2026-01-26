@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
     public GameObject gameOverUI;
     public GameObject qteUI;
     public GameObject playerHealthUI;
+    public GameObject clearUI;
 
     [Header("Pause Popup CanvasGroup (권장)")]
     [SerializeField] private CanvasGroup pausePopupCanvasGroup;
@@ -34,6 +35,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioClip speedupSFX;
     [SerializeField] private AudioClip s_swooshSFX;
     [SerializeField] private AudioClip q_swooshSFX;
+    [SerializeField] private AudioClip bossHitSFX;
     // UI 클릭을 위해 필요 (없으면 자동 생성)
     private EventSystem eventSystem;
 
@@ -74,8 +76,8 @@ public class GameManager : MonoBehaviour
         if (pausePopupUI != null) pausePopupUI.SetActive(false);
         if (gameOverUI != null) gameOverUI.SetActive(false);
         if (qteUI != null) qteUI.SetActive(false);
+        if (clearUI != null) clearUI.SetActive(false);
     }
-
     private void Update()
     {
         // if (State == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
@@ -103,6 +105,16 @@ public class GameManager : MonoBehaviour
         if (gameOverUI != null) gameOverUI.SetActive(false);
 
         ApplyPauseUIInteractivity(false);
+    }
+
+    public void RestartGame()
+    {
+        Time.timeScale = 1f;
+        State = GameState.Playing;
+        HideAllUI();
+        ApplyPauseUIInteractivity(false);
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void SetGameOver()
@@ -190,6 +202,7 @@ public class GameManager : MonoBehaviour
     public void PlaySpeedupSFX() => PlaySFX(speedupSFX);
     public void PlaySwooshSFX() => PlaySFX(s_swooshSFX);
     public void PlayQuickSwooshSFX() => PlaySFX(q_swooshSFX);
+    public void PlayBossHitSFX() => PlaySFX(bossHitSFX);
 
     public void ReturnToLobby()
     {

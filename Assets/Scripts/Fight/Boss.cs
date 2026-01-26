@@ -19,6 +19,10 @@ public class Boss : MonoBehaviour, IAttackable
     [Header("Defeat")]
     [SerializeField] private bool destroyOnDefeat = true;
 
+    [Header("VFX")]
+    [Tooltip("보스 처치(파괴) 시 재생될 파티클 프리팹")]
+    [SerializeField] private ParticleSystem defeatParticle;
+
     private bool _qteRunning;
     private float _nextAttackTime;
 
@@ -94,10 +98,14 @@ public class Boss : MonoBehaviour, IAttackable
             {
                 ph.BossTakeDamage(1);
                 if (ph.CurrentHp <= 0 && GameManager.Instance != null)
+                {
+                    if (qte != null) qte.Cancel();   // ✅ 사망 시 QTE 강제 종료
                     GameManager.Instance.GameOver();
+                }
             }
         }
 
+        // ✅ MapManager에게 QTE 결과 알림(기존 기능 유지)
         var mm = FindObjectOfType<MapManager>();
         if (mm != null)
             mm.OnBossQTEResult(qte.WasSuccess);
@@ -114,10 +122,15 @@ public class Boss : MonoBehaviour, IAttackable
         {
             if (GameManager.Instance != null)
                 GameManager.Instance.PlayBoomSFX();
+
+            // ✅ 보스 처치 파티클
+            PlayDefeatParticle();
+
             var mm = FindObjectOfType<MapManager>();
             if (mm != null)
             {
-                mm.AdvanceSpeedStage();
+                // ✅ 여기서 mm.AdvanceSpeedStage()는 더 이상 호출하지 않음.
+                // 스테이지/SpeedUp 연출은 MapManager.OnBossDefeated() 내부에서 처리하도록 변경됨.
                 mm.OnBossDefeated();
 
                 var ph = FindObjectOfType<PlayerHealth>();
@@ -127,7 +140,16 @@ public class Boss : MonoBehaviour, IAttackable
             Destroy(gameObject);
             return;
         }
+    }
 
+    private void PlayDefeatParticle()
+    {
+        if (defeatParticle == null) return;
+
+        ParticleSystem ps = Instantiate(defeatParticle, transform.position, Quaternion.identity);
+
+        // 파티클 끝나면 자동 제거 (StopAction=Destroy면 이 줄 없어도 됨)
+        Destroy(ps.gameObject, ps.main.duration + ps.main.startLifetime.constantMax);
     }
 
     public void SetBarrierActive(bool active)

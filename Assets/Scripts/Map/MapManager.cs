@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,13 +8,16 @@ public class MapManager : MonoBehaviour
     public float currentMapSpeed = 15f;
     public float baseMapSpeed = 15f;
 
-    [Header("Background Settings")]
+    [Header("Speed Stages (3개로 사용 권장)")]
+    [SerializeField] private float[] speedStages = { 15f, 19f, 23f };
+    private int currentSpeedStage = 0;
+
+    [Header("Background (Optional)")]
     public Transform[] bgs = new Transform[3];
     public float parallax = 0.3f;
-    public MapMover mapMover;
 
     private float bgWidth;
-    private float lastMoverX;
+    private float lastPlayerX;
     private List<Transform> activeBGs = new List<Transform>();
 
     [Header("Map Patterns (Chunk System)")]
@@ -25,13 +29,15 @@ public class MapManager : MonoBehaviour
     private Queue<GameObject> chunks = new Queue<GameObject>();
     private Transform lastEndPoint;
 
+    // ✅ chunks와 함께 "패턴 인덱스"도 동일한 순서로 추적
+    private readonly Queue<int> chunkPatternIndices = new Queue<int>();
+    private readonly HashSet<int> activePatternIndices = new HashSet<int>();
+
     // =========================
     // Boss Spawn
     // =========================
-    [Header("Boss Spawn")]
-    [SerializeField] private GameObject bossPrefabStage1;
-    [SerializeField] private GameObject bossPrefabStage2;
-    [SerializeField] private GameObject bossPrefabFinal;
+    [Header("Boss Spawn (3개로 사용 권장)")]
+    [SerializeField] private GameObject[] bossPrefabs = new GameObject[3];
     [SerializeField] private Transform bossPos;
 
     [Tooltip("누적 청크 스폰 수(초기 청크 포함)가 이 값에 도달하면 보스 1회 소환")]
@@ -50,41 +56,78 @@ public class MapManager : MonoBehaviour
     [Header("InGameUI")]
     [SerializeField] private PopupTextUI InGamePopupUI;
 
-    private int spawnedChunkCount = 0;       // 초기 청크 포함 누적 스폰 수
-    private bool bossSpawned = false;        // 보스 1회 소환 여부
+    // 보스 진행은 "개수"로만 관리
+    [Header("Boss Progression")]
+    [Tooltip("보스를 몇 번 처치해야 게임 클리어인지. (기본 3)")]
+    [SerializeField] private int totalBossesToClear = 3;
+
+    [SerializeField] private int bossesDefeated = 0;
+
+    private int spawnedChunkCount = 0;             // 초기 청크 포함 누적 스폰 수
+    private int spawnedChunkCountAtStageStart = 0; // 스테이지 시작 시점 누적 스폰 수
+
+    private bool bossSpawned = false;
     private GameObject spawnedBossObj = null;
     private Boss spawnedBoss = null;
 
     // --- 삭제(지나감) 카운터 ---
-    private int removedChunkCountTotal = 0;  // 게임 시작 이후 삭제된 청크 총합
-    private int removedChunkCountAtBossSpawn = 0; // 보스 소환 시점의 removedChunkCountTotal
-    private int removedChunkCountAtLastQTE = 0;   // 마지막 QTE 시작 시점의 removedChunkCountTotal
+    private int removedChunkCountTotal = 0;
+    private int removedChunkCountAtBossSpawn = 0;
+    private int removedChunkCountAtLastQTE = 0;
     private bool qteTriggeredOnce = false;
 
-    [Header("Speed Stages")]
-    [SerializeField] private float[] speedStages = { 15f, 19f, 23f };
-
-    private int currentSpeedStage = 0;
-
-    private int spawnedChunkCountAtStageStart = 0; // 스테이지 시작 시점 누적 스폰 수
-
+    // QTE 성공 후, 보스 타격권 소모 전까지는 QTE 재트리거 금지
     private bool waitUntilBossHitConsumed = false;
     private PlayerAttack cachedPlayerAttack = null;
 
-    // =========================
-    // ✅ NEW: "현재 살아있는 청크 패턴" 추적
-    // =========================
-    private readonly Queue<int> chunkPatternIndices = new Queue<int>(); // chunks와 동일 순서
-    private readonly HashSet<int> activePatternIndices = new HashSet<int>(); // 현재 스폰되어 살아있는 패턴 인덱스들
+    // ✅ NEW: 공격 중엔 배경 패럴럭스 멈추기
+    private bool parallaxPausedByAttack = false;
 
+    // =========================================================
+    // Game Clear (연출용 추가)
+    // =========================================================
+    [Header("Game Clear")]
+    [SerializeField] private GameObject gameClearUI;
+    [SerializeField] private bool stopTimeScaleOnClear = false;
+    private bool isGameCleared = false;
+
+    [Header("Game Clear Sequence - UI Hide")]
+    [Tooltip("클리어 연출 시작 시 숨길 UI 루트들(인게임 HUD, QTE, 체력바 등)")]
+    [SerializeField] private GameObject[] uiRootsToHideOnClear;
+
+    [Header("Game Clear Sequence - Disable Controls")]
+    [Tooltip("클리어 연출 시작 시 비활성화할 컴포넌트들(플레이어 조작/공격/그래플 등)")]
+    [SerializeField] private MonoBehaviour[] componentsToDisableOnClear;
+
+    [Header("Game Clear Sequence - Camera")]
+    [SerializeField] private Camera clearCamera;
+    [Tooltip("줌/이동 연출 시간")]
+    [SerializeField] private float clearZoomDuration = 0.9f;
+    [Tooltip("클리어 시 목표 ortho size(작을수록 확대)")]
+    [SerializeField] private float clearTargetOrthoSize = 3.5f;
+    [Tooltip("보스 포커스 오프셋(보스 중심에서 약간 위로 등)")]
+    [SerializeField] private Vector3 clearFocusOffset = new Vector3(0f, 0.5f, 0f);
+
+    [Header("Game Clear Sequence - Fade")]
+    [Tooltip("검은 페이드용 CanvasGroup(알파 0->1)")]
+    [SerializeField] private ScreenFader screenFader;
+    [SerializeField] private float fadeOutDuration = 0.6f; // 이건 유지해도 됨(화면 페이드 시간)
+
+
+    [Header("Game Clear Sequence - Timing")]
+    [SerializeField] private float holdAfterFade = 0.15f;
+
+    private Coroutine clearRoutine = null;
 
     void Start()
     {
-        currentSpeedStage = 0;
-        currentMapSpeed = speedStages[currentSpeedStage];
-        spawnedChunkCountAtStageStart = 0;
-
         TryResolveRefs();
+        HookAttackEvents();
+
+        bossesDefeated = 0;
+        ApplyStageFromBossCount(playFx: false);
+
+        spawnedChunkCountAtStageStart = 0;
 
         if (mapPatterns != null && mapPatterns.Count > 0)
         {
@@ -95,10 +138,90 @@ public class MapManager : MonoBehaviour
             Debug.LogError("[MapManager] mapPatterns가 비어있습니다.");
         }
 
-        if (bgs == null || bgs.Length == 0 || bgs[0] == null)
-        {
+        SetupBackgrounds();
+
+        if (clearCamera == null) clearCamera = Camera.main;
+        if (screenFader != null)
+            screenFader.SetAlpha(0f, blockInput: false); // 평소 클릭 통과
+    }
+
+    private void OnDestroy()
+    {
+        UnhookAttackEvents();
+    }
+
+    void Update()
+    {
+        if (isGameCleared) return;
+
+        if (GameManager.Instance != null && GameManager.Instance.State != GameState.Playing)
             return;
+
+        if (player == null)
+        {
+            var p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) player = p.transform;
+            if (player == null) return;
         }
+
+        // 청크 스폰/삭제
+        if (lastEndPoint != null && player.position.x + spawnDistanceAhead > lastEndPoint.position.x)
+        {
+            SpawnNextChunk();
+            RemoveOldChunk(); // ✅ 여기서 삭제 카운트 + QTE 트리거
+        }
+
+        // 배경 패럴럭스(선택): 플레이어 X 이동량 기반
+        UpdateBackgroundParallaxByPlayer();
+
+        // 배경 무한루프(선택)
+        if (activeBGs.Count > 0 && bgWidth > 0.001f)
+            UpdateBackgroundCycling();
+    }
+
+    // =========================================================
+    // ✅ PlayerAttack 이벤트 구독/해제
+    // =========================================================
+    private void HookAttackEvents()
+    {
+        if (cachedPlayerAttack == null)
+            cachedPlayerAttack = FindObjectOfType<PlayerAttack>();
+
+        if (cachedPlayerAttack == null) return;
+
+        cachedPlayerAttack.OnAttackOutStart += HandleAttackStart;
+        cachedPlayerAttack.OnAttackReturnEnd += HandleAttackEnd;
+    }
+
+    private void UnhookAttackEvents()
+    {
+        if (cachedPlayerAttack == null) return;
+
+        cachedPlayerAttack.OnAttackOutStart -= HandleAttackStart;
+        cachedPlayerAttack.OnAttackReturnEnd -= HandleAttackEnd;
+    }
+
+    private void HandleAttackStart()
+    {
+        parallaxPausedByAttack = true;
+
+        if (player != null) lastPlayerX = player.position.x;
+    }
+
+    private void HandleAttackEnd()
+    {
+        parallaxPausedByAttack = false;
+
+        if (player != null) lastPlayerX = player.position.x;
+    }
+
+    // =========================================================
+    // Background (Optional)
+    // =========================================================
+    private void SetupBackgrounds()
+    {
+        if (bgs == null || bgs.Length == 0 || bgs[0] == null)
+            return;
 
         SpriteRenderer sr = bgs[0].GetComponent<SpriteRenderer>();
         if (sr == null)
@@ -108,7 +231,6 @@ public class MapManager : MonoBehaviour
         }
 
         bgWidth = sr.bounds.size.x;
-
         bgWidth = Mathf.Ceil(bgWidth * 1000f) / 1000f;
         bgWidth += 0.02f;
 
@@ -120,53 +242,37 @@ public class MapManager : MonoBehaviour
             activeBGs.Add(bgs[i]);
         }
 
-        if (mapMover != null)
-            lastMoverX = mapMover.transform.position.x;
+        lastPlayerX = (player != null) ? player.position.x : 0f;
     }
 
-    void Update()
+    private void UpdateBackgroundParallaxByPlayer()
     {
-        if (GameManager.Instance != null && GameManager.Instance.State != GameState.Playing)
-            return;
+        if (activeBGs.Count == 0) return;
+        if (player == null) return;
 
-        if (player == null)
+        if (parallaxPausedByAttack)
         {
-            var p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) player = p.transform;
-            if (player == null) return;
+            lastPlayerX = player.position.x;
+            return;
         }
 
-        if (lastEndPoint == null)
-            return;
+        float currentX = player.position.x;
+        float deltaX = currentX - lastPlayerX;
 
-        if (player.position.x + spawnDistanceAhead > lastEndPoint.position.x)
+        if (Mathf.Abs(deltaX) > 0.0001f)
         {
-            SpawnNextChunk();
-            RemoveOldChunk(); // ✅ 여기서 삭제 카운트 + QTE 트리거
-        }
-
-        if (mapMover != null)
-        {
-            float currentX = mapMover.transform.position.x;
-            float deltaX = currentX - lastMoverX;
-
-            if (Mathf.Abs(deltaX) > 0.0001f)
+            for (int i = 0; i < activeBGs.Count; i++)
             {
-                for (int i = 0; i < activeBGs.Count; i++)
-                {
-                    var bg = activeBGs[i];
-                    if (bg == null) continue;
-                    bg.position += new Vector3(deltaX * parallax, 0, 0);
-                }
+                var bg = activeBGs[i];
+                if (bg == null) continue;
+                bg.position += new Vector3(deltaX * parallax, 0, 0);
             }
-            lastMoverX = currentX;
         }
 
-        if (activeBGs.Count > 0 && bgWidth > 0.001f)
-            UpdateBackgroundCycling();
+        lastPlayerX = currentX;
     }
 
-    void UpdateBackgroundCycling()
+    private void UpdateBackgroundCycling()
     {
         Camera cam = Camera.main;
         if (cam == null) return;
@@ -187,6 +293,9 @@ public class MapManager : MonoBehaviour
         }
     }
 
+    // =========================================================
+    // Chunk Spawn
+    // =========================================================
     void SpawnInitialChunk()
     {
         if (mapPatterns == null || mapPatterns.Count == 0) return;
@@ -199,9 +308,7 @@ public class MapManager : MonoBehaviour
 
         var gapScaler = chunk.GetComponent<MapChunkGapScaler>();
         if (gapScaler != null)
-        {
             gapScaler.Apply(currentMapSpeed);
-        }
 
         MapPattern pattern = chunk.GetComponent<MapPattern>();
         if (pattern == null || pattern.endPoint == null)
@@ -214,7 +321,6 @@ public class MapManager : MonoBehaviour
         lastEndPoint = pattern.endPoint;
         chunks.Enqueue(chunk);
 
-        // ✅ NEW: 패턴 인덱스 추적 등록
         chunkPatternIndices.Enqueue(index);
         activePatternIndices.Add(index);
 
@@ -227,7 +333,7 @@ public class MapManager : MonoBehaviour
         if (mapPatterns == null || mapPatterns.Count == 0) return;
         if (lastEndPoint == null) return;
 
-        int index = DecideNextPatternIndex(); // ✅ NEW: "현재 살아있는 패턴" 제외 로직 적용
+        int index = DecideNextPatternIndex();
         GameObject prefab = mapPatterns[index];
         if (prefab == null) return;
 
@@ -235,9 +341,7 @@ public class MapManager : MonoBehaviour
 
         var gapScaler = chunk.GetComponent<MapChunkGapScaler>();
         if (gapScaler != null)
-        {
             gapScaler.Apply(currentMapSpeed);
-        }
 
         MapPattern pattern = chunk.GetComponent<MapPattern>();
         if (pattern == null || pattern.startPoint == null || pattern.endPoint == null)
@@ -252,7 +356,6 @@ public class MapManager : MonoBehaviour
         lastEndPoint = pattern.endPoint;
         chunks.Enqueue(chunk);
 
-        // ✅ NEW: 패턴 인덱스 추적 등록
         chunkPatternIndices.Enqueue(index);
         activePatternIndices.Add(index);
 
@@ -265,37 +368,25 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    // =========================
-    // ✅ NEW: "활성 청크에서 사용 중인 패턴은 제외" 룰
-    // =========================
     private int DecideNextPatternIndex()
     {
         int count = mapPatterns != null ? mapPatterns.Count : 0;
         if (count <= 0) return 0;
 
-        // 후보(=현재 active에 없는 인덱스) 만들기
         List<int> candidates = null;
 
-        // activePatternIndices가 너무 커질 일은 없지만, 안전하게 count 기준으로 필터
         for (int i = 0; i < count; i++)
         {
-            if (mapPatterns[i] == null) continue; // null 프리팹은 제외
+            if (mapPatterns[i] == null) continue;
             if (activePatternIndices.Contains(i)) continue;
 
             candidates ??= new List<int>(count);
             candidates.Add(i);
         }
 
-        // 후보가 있으면 그 중 랜덤
         if (candidates != null && candidates.Count > 0)
-        {
             return candidates[Random.Range(0, candidates.Count)];
-        }
 
-        // ✅ 예외 처리:
-        // 모든 패턴이 현재 active(=maxChunks가 패턴 수보다 크거나 같을 때)라면
-        // "겹치지 않게"가 불가능하므로 그냥 랜덤 fallback
-        // (원하면 여기서 '가장 오래된 active를 제외하고 뽑기' 같은 정책도 가능)
         return Random.Range(0, count);
     }
 
@@ -305,7 +396,6 @@ public class MapManager : MonoBehaviour
         {
             var old = chunks.Dequeue();
 
-            // ✅ NEW: old와 동일 순서로 패턴 인덱스도 제거
             if (chunkPatternIndices.Count > 0)
             {
                 int removedIndex = chunkPatternIndices.Dequeue();
@@ -316,38 +406,21 @@ public class MapManager : MonoBehaviour
             {
                 Destroy(old);
 
-                // ✅ "삭제된 청크" = 실제로 지나간 청크로 카운트
                 removedChunkCountTotal++;
-
-                // ✅ 보스전 QTE 트리거는 삭제 기준으로 체크
                 TryTriggerBossQTEByRemovedChunks();
             }
         }
     }
 
-    private void TryResolveRefs()
-    {
-        if (player == null)
-        {
-            var p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) player = p.transform;
-        }
-
-        if (mapMover == null)
-            mapMover = FindObjectOfType<MapMover>();
-
-        if (cachedPlayerAttack == null)
-            cachedPlayerAttack = FindObjectOfType<PlayerAttack>();
-    }
-
-    // =========================
-    // Boss spawn helper
-    // =========================
+    // =========================================================
+    // Boss Flow
+    // =========================================================
     private void TrySpawnBossIfReady()
     {
         if (bossSpawned) return;
 
-        if ((spawnedChunkCount - spawnedChunkCountAtStageStart) < chunksBeforeBoss) return;
+        if ((spawnedChunkCount - spawnedChunkCountAtStageStart) < chunksBeforeBoss)
+            return;
 
         SpawnBoss();
     }
@@ -363,27 +436,38 @@ public class MapManager : MonoBehaviour
             return;
         }
 
+        int stageIndex = Mathf.Clamp(bossesDefeated, 0, 2);
+
+        GameObject prefab = null;
+        if (bossPrefabs != null && bossPrefabs.Length > 0)
+        {
+            if (stageIndex < bossPrefabs.Length)
+                prefab = bossPrefabs[stageIndex];
+            else
+                prefab = bossPrefabs[bossPrefabs.Length - 1];
+        }
+
+        if (prefab == null)
+        {
+            Debug.LogError("[MapManager] bossPrefabs가 비어있거나 stageIndex에 해당하는 프리팹이 없습니다.");
+            return;
+        }
+
         Vector3 spawnPos = (bossPos != null) ? bossPos.position : player.position;
 
-        GameObject prefab =
-            currentSpeedStage == 0 ? bossPrefabStage1 :
-            currentSpeedStage == 1 ? bossPrefabStage2 :
-            bossPrefabFinal;
+        spawnedBossObj = Instantiate(prefab, spawnPos, Quaternion.identity);
 
-        GameObject bossObj = Instantiate(prefab, spawnPos, Quaternion.identity);
-
-        spawnedBoss = bossObj.GetComponent<Boss>();
+        spawnedBoss = spawnedBossObj.GetComponent<Boss>();
         if (spawnedBoss == null)
-            spawnedBoss = bossObj.GetComponentInChildren<Boss>(true);
+            spawnedBoss = spawnedBossObj.GetComponentInChildren<Boss>(true);
 
-        // ✅ 보스 진입 시점의 "삭제 카운트"를 기준점으로 저장
         removedChunkCountAtBossSpawn = removedChunkCountTotal;
         removedChunkCountAtLastQTE = removedChunkCountTotal;
         qteTriggeredOnce = false;
 
         if (debugBossAndChunk)
         {
-            Debug.Log($"[MapManager] Boss Spawned at {spawnPos}. RemovedAtBossSpawn={removedChunkCountAtBossSpawn}, BossCompFound={(spawnedBoss != null)}");
+            Debug.Log($"[MapManager] Boss Spawned (stage={stageIndex}) at {spawnPos}. RemovedAtBossSpawn={removedChunkCountAtBossSpawn}, BossCompFound={(spawnedBoss != null)}");
         }
     }
 
@@ -393,23 +477,18 @@ public class MapManager : MonoBehaviour
         if (!IsBossAlive()) return;
         if (qteOnlyOnceAfterBossSpawn && qteTriggeredOnce) return;
 
-        // ✅ QTE 성공으로 공격권(보스 1회 타격)이 생긴 상태면,
-        // 그 공격권을 "소모할 때까지" QTE를 다시 띄우지 않는다.
         if (waitUntilBossHitConsumed)
         {
             if (cachedPlayerAttack == null)
                 cachedPlayerAttack = FindObjectOfType<PlayerAttack>();
 
-            // PlayerAttack에 아래에서 추가할 메서드 사용
             if (cachedPlayerAttack != null && cachedPlayerAttack.HasBossHitCredit())
                 return;
 
-            // 공격권이 없어진 순간부터 다시 N청크 카운트 시작
             waitUntilBossHitConsumed = false;
             removedChunkCountAtLastQTE = removedChunkCountTotal;
         }
 
-        // Boss 참조 복구 시도(혹시 누락됐을 때)
         if (spawnedBoss == null && spawnedBossObj != null)
         {
             spawnedBoss = spawnedBossObj.GetComponent<Boss>();
@@ -425,7 +504,7 @@ public class MapManager : MonoBehaviour
 
         if (passed < removedChunksBeforeQTE) return;
 
-        bool started = spawnedBoss.ForceStartAttackAttempt(); // ✅ 쿨타임 무시 강제 시작
+        bool started = spawnedBoss.ForceStartAttackAttempt();
         if (started)
         {
             if (qteOnlyOnceAfterBossSpawn) qteTriggeredOnce = true;
@@ -442,35 +521,61 @@ public class MapManager : MonoBehaviour
         return false;
     }
 
-    public void AdvanceSpeedStage()
+    // =========================================================
+    // Speed Stage (Boss Count 기반)
+    // =========================================================
+    private void ApplyStageFromBossCount(bool playFx)
     {
-        if (currentSpeedStage >= speedStages.Length - 1)
+        if (speedStages == null || speedStages.Length == 0)
             return;
 
-        currentSpeedStage++;
-        currentMapSpeed = speedStages[currentSpeedStage];
-        
-        GameManager.Instance.PlaySpeedupSFX();
-        
-        if (InGamePopupUI != null)
-            InGamePopupUI.Play("SPEED UP!!");
+        int targetStage = Mathf.Clamp(bossesDefeated, 0, speedStages.Length - 1);
 
-        Debug.Log($"[MapManager] Speed Stage {currentSpeedStage + 1} → {currentMapSpeed}");
+        if (targetStage == currentSpeedStage && currentMapSpeed > 0f)
+            return;
+
+        currentSpeedStage = targetStage;
+        currentMapSpeed = speedStages[currentSpeedStage];
+        baseMapSpeed = currentMapSpeed;
+
+        if (playFx)
+        {
+            if (GameManager.Instance != null)
+                GameManager.Instance.PlaySpeedupSFX();
+
+            if (InGamePopupUI != null)
+                InGamePopupUI.Play("SPEED UP!!");
+
+            Debug.Log($"[MapManager] Speed Stage {currentSpeedStage + 1} → {currentMapSpeed}");
+        }
     }
 
     public void OnBossDefeated()
     {
-        // ✅ 보스 참조 정리
+        // ✅ 마지막 보스 클리어 연출용: 보스 Transform을 먼저 확보
+        Transform lastBossFocus = (spawnedBossObj != null) ? spawnedBossObj.transform : null;
+
+        bossesDefeated++;
+
         bossSpawned = false;
         spawnedBossObj = null;
         spawnedBoss = null;
-        
-        GameManager.Instance.PlayBoomSFX();
 
-        // ✅ 다음 스테이지 시작 기준점 갱신 (지금부터 다시 chunksBeforeBoss 카운트)
+        if (GameManager.Instance != null)
+            GameManager.Instance.PlayBoomSFX();
+
+        if (totalBossesToClear <= 0) totalBossesToClear = 1;
+
+        if (bossesDefeated >= totalBossesToClear)
+        {
+            TriggerGameClear(lastBossFocus);
+            return;
+        }
+
+        ApplyStageFromBossCount(playFx: true);
+
         spawnedChunkCountAtStageStart = spawnedChunkCount;
 
-        // ✅ QTE 기준점 리셋(다음 보스 기준으로 다시 계산)
         removedChunkCountAtBossSpawn = removedChunkCountTotal;
         removedChunkCountAtLastQTE = removedChunkCountTotal;
         qteTriggeredOnce = false;
@@ -478,8 +583,128 @@ public class MapManager : MonoBehaviour
 
     public void OnBossQTEResult(bool success)
     {
-        // ✅ 성공/실패와 무관하게 QTE가 "끝난 시점"부터
-        // removedChunksBeforeQTE 만큼 청크가 더 지나야 다음 QTE
         removedChunkCountAtLastQTE = removedChunkCountTotal;
+
+        if (success)
+        {
+            waitUntilBossHitConsumed = true;
+        }
+    }
+
+    // =========================================================
+    // Game Clear
+    // =========================================================
+    private void StopMapMovement()
+    {
+        currentMapSpeed = 0f;
+    }
+
+    private void TriggerGameClear(Transform bossFocus)
+    {
+        if (isGameCleared) return;
+        isGameCleared = true;
+
+        // 맵 정지(즉시)
+        StopMapMovement();
+
+        // 연출 코루틴 시작
+        if (clearRoutine != null) StopCoroutine(clearRoutine);
+        clearRoutine = StartCoroutine(GameClearSequence(bossFocus));
+    }
+
+    private IEnumerator GameClearSequence(Transform bossFocus)
+    {
+        // 1) 기존 UI 숨김
+        if (uiRootsToHideOnClear != null)
+        {
+            for (int i = 0; i < uiRootsToHideOnClear.Length; i++)
+            {
+                if (uiRootsToHideOnClear[i] != null)
+                    uiRootsToHideOnClear[i].SetActive(false);
+            }
+        }
+
+        // 2) 플레이어 조작/공격 등 비활성화(선택)
+        if (componentsToDisableOnClear != null)
+        {
+            for (int i = 0; i < componentsToDisableOnClear.Length; i++)
+            {
+                if (componentsToDisableOnClear[i] != null)
+                    componentsToDisableOnClear[i].enabled = false;
+            }
+        }
+
+        // 3) 카메라 줌/이동(보스가 없으면 플레이어로)
+        Camera cam = clearCamera != null ? clearCamera : Camera.main;
+        if (cam != null)
+        {
+            Vector3 startPos = cam.transform.position;
+            float startSize = cam.orthographicSize;
+
+            Transform focus = bossFocus != null ? bossFocus : player;
+            Vector3 targetPos = startPos;
+            if (focus != null)
+            {
+                Vector3 fp = focus.position + clearFocusOffset;
+                targetPos = new Vector3(fp.x, fp.y, startPos.z);
+            }
+
+            float t = 0f;
+            float dur = Mathf.Max(0.01f, clearZoomDuration);
+
+            while (t < dur)
+            {
+                t += Time.unscaledDeltaTime;
+                float a = Mathf.Clamp01(t / dur);
+
+                cam.transform.position = Vector3.Lerp(startPos, targetPos, a);
+                cam.orthographicSize = Mathf.Lerp(startSize, clearTargetOrthoSize, a);
+
+                yield return null;
+            }
+
+            cam.transform.position = targetPos;
+            cam.orthographicSize = clearTargetOrthoSize;
+        }
+
+        // 4) 검은 페이드아웃 (ScreenFader 사용)
+        if (screenFader != null)
+        {
+            // 페이드 중에는 입력 막기, 페이드 끝나면 기본 정책대로(통과)로 돌아가게 됨
+            screenFader.FadeOut(fadeOutDuration);
+            yield return new WaitForSecondsRealtime(Mathf.Max(0.01f, fadeOutDuration));
+        }
+
+        // 5) 잠깐 홀드 후 Clear UI 띄우기
+        if (holdAfterFade > 0f)
+        {
+            float t = 0f;
+            while (t < holdAfterFade)
+            {
+                t += Time.unscaledDeltaTime;
+                yield return null;
+            }
+        }
+
+        if (gameClearUI != null)
+            gameClearUI.SetActive(true);
+
+        if (stopTimeScaleOnClear)
+            Time.timeScale = 0f;
+    }
+
+    // =========================================================
+    // Refs
+    // =========================================================
+    private void TryResolveRefs()
+    {
+        if (player == null)
+        {
+            var p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) player = p.transform;
+        }
+
+        if (cachedPlayerAttack == null)
+            cachedPlayerAttack = FindObjectOfType<PlayerAttack>();
     }
 }

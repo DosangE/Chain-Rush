@@ -23,6 +23,10 @@ public class PlayerHealth : MonoBehaviour
     [Header("UI")]
     [SerializeField] private HeartsUI heartsUI;
 
+    [Header("VFX")]
+    [SerializeField] private ParticleSystem impactOnArrivalVFX;
+    [SerializeField] private bool spawnImpactAtPlayerPosition = true;
+    [SerializeField] private Vector3 impactVFXOffset = Vector3.zero;
     private void Awake()
     {
         currentHp = maxHp;
@@ -72,6 +76,7 @@ public class PlayerHealth : MonoBehaviour
         if (currentHp <= 0) return false;
 
         currentHp = Mathf.Max(0, currentHp - amount);
+        SpawnImpactVFX(transform.position);
         Debug.Log($"[HP] -{amount} => {currentHp}/{maxHp}");
         OnHpChanged?.Invoke(currentHp, maxHp);
         if (currentHp <= 0)
@@ -108,6 +113,18 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    private void SpawnImpactVFX(Vector2 targetPoint)
+    {
+        if (impactOnArrivalVFX == null) return;
+
+        Vector3 basePos = spawnImpactAtPlayerPosition ? transform.position : (Vector3)targetPoint;
+        Vector3 spawnPos = basePos + impactVFXOffset; // ✅ 오프셋 적용
+
+        ParticleSystem ps = Instantiate(impactOnArrivalVFX, spawnPos, Quaternion.identity);
+
+        float life = ps.main.duration + ps.main.startLifetime.constantMax;
+        Destroy(ps.gameObject, life);
+    }
     private IEnumerator InvincibleRoutine()
     {
         IsInvincible = true;

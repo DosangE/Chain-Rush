@@ -88,14 +88,6 @@ public class BossQTE : MonoBehaviour
             return;
         }
 
-        // 키 간 시간 제한 체크
-        if (perKeyTimeLimit > 0f && now - _lastInputTimeUnscaled > perKeyTimeLimit)
-        {
-            if (debugLog) Debug.Log("[BossQTE] FAIL (per key time limit)");
-            Fail();
-            return;
-        }
-
         // 풀 키 중 하나가 눌리면 처리
         for (int i = 0; i < keyPool.Length; i++)
         {
@@ -181,6 +173,14 @@ public class BossQTE : MonoBehaviour
         보스 레이저 공격
         */
 
+        if (ui != null) ui.Hide(false);
+    }
+
+    public void Cancel()
+    {
+        if (!IsRunning) return;
+        IsRunning = false;
+        WasSuccess = false;
         if (ui != null) ui.Hide(false);
     }
 

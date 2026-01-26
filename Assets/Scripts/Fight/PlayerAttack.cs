@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Linq.Expressions;
 using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
@@ -60,6 +59,14 @@ public class PlayerAttack : MonoBehaviour
     [Header("Boss Attack Rules")]
     [Tooltip("보스 QTE 중이거나 쿨타임이면, 보스 공격 시도 자체를 막음(보스만).")]
     [SerializeField] private bool blockBossAttackDuringCooldownOrQTE = true;
+
+    [Header("VFX - Impact On Arrival")]
+    [Tooltip("타겟 도착 순간(타격 순간)에 재생될 파티클 프리팹")]
+    [SerializeField] private ParticleSystem impactOnArrivalVFX;
+    [Tooltip("파티클이 플레이어 위치(도착 위치)에 뜨게 할지, 타겟 위치에 뜨게 할지")]
+    [SerializeField] private bool spawnImpactAtPlayerPosition = true;
+    [SerializeField] private Vector3 impactVFXOffset = Vector3.zero;
+
 
     private bool isAttacking;
     private float nextAttackAllowedTime;
@@ -192,17 +199,18 @@ public class PlayerAttack : MonoBehaviour
 
             OnAttackOutStart?.Invoke();
 
-            // ✅ 이동 시작(공격 출발) 사운드
             if (GameManager.Instance != null)
                 GameManager.Instance.PlayQuickSwooshSFX();
 
             Vector3 from = transform.position;
             yield return MovePlayerKeepingChain(from, bossPoint, flyOutDuration, bossPoint);
 
-            // ✅ 보스 타격(체력 감소) 사운드
+            // ✅ 도착 순간(= 타격 순간) 파티클
+            SpawnImpactVFX(bossPoint);
+
             if (GameManager.Instance != null)
             {
-                // 보스 체력 감소 사운드
+                GameManager.Instance.PlayBossHitSFX();
             }
 
             boss.OnHitByAttack();
@@ -214,7 +222,6 @@ public class PlayerAttack : MonoBehaviour
             ChainOff();
             OnAttackOutEnd?.Invoke();
 
-            // 복귀
             OnAttackReturnStart?.Invoke();
 
             Vector2 returnPoint = new Vector2(startX, returnYWorld);
@@ -279,14 +286,15 @@ public class PlayerAttack : MonoBehaviour
 
         OnAttackOutStart?.Invoke();
 
-        // ✅ 이동 시작(공격 출발) 사운드
         if (GameManager.Instance != null)
             GameManager.Instance.PlayQuickSwooshSFX();
 
         Vector3 from2 = transform.position;
         yield return MovePlayerKeepingChain(from2, targetPoint, flyOutDuration, targetPoint);
 
-        // ✅ 적 파괴/피격 사운드(성공 시점)
+        // ✅ 도착 순간(= 타격 순간) 파티클
+        SpawnImpactVFX(targetPoint);
+
         if (GameManager.Instance != null)
             GameManager.Instance.PlayBoomSFX();
 
@@ -324,6 +332,19 @@ public class PlayerAttack : MonoBehaviour
 
         PlayerActionLock.Unlock();
         isAttacking = false;
+    }
+
+    private void SpawnImpactVFX(Vector2 targetPoint)
+    {
+        if (impactOnArrivalVFX == null) return;
+
+        Vector3 basePos = spawnImpactAtPlayerPosition ? transform.position : (Vector3)targetPoint;
+        Vector3 spawnPos = basePos + impactVFXOffset; // ✅ 오프셋 적용
+
+        ParticleSystem ps = Instantiate(impactOnArrivalVFX, spawnPos, Quaternion.identity);
+
+        float life = ps.main.duration + ps.main.startLifetime.constantMax;
+        Destroy(ps.gameObject, life);
     }
 
     private IEnumerator ChainShootVisual(Vector2 chainEnd, float duration)
