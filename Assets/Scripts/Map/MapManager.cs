@@ -449,7 +449,9 @@ public class MapManager : MonoBehaviour
 
         currentSpeedStage++;
         currentMapSpeed = speedStages[currentSpeedStage];
-
+        
+        GameManager.Instance.PlaySpeedupSFX();
+        
         if (InGamePopupUI != null)
             InGamePopupUI.Play("SPEED UP!!");
 
@@ -462,6 +464,8 @@ public class MapManager : MonoBehaviour
         bossSpawned = false;
         spawnedBossObj = null;
         spawnedBoss = null;
+        
+        GameManager.Instance.PlayBoomSFX();
 
         // ✅ 다음 스테이지 시작 기준점 갱신 (지금부터 다시 chunksBeforeBoss 카운트)
         spawnedChunkCountAtStageStart = spawnedChunkCount;

@@ -69,13 +69,12 @@ public class PlayerAttack : MonoBehaviour
     public System.Action OnAttackReturnStart;
     public System.Action OnAttackReturnEnd;
     private Boss boss;
+
     public void GrantBossHitCredit(int amount)
     {
         if (amount <= 0) return;
-
         bossHitCredit = 1;
     }
-
 
     private bool ConsumeBossHitCredit()
     {
@@ -154,11 +153,9 @@ public class PlayerAttack : MonoBehaviour
         Boss boss = hitCol.GetComponentInParent<Boss>();
         if (boss != null)
         {
-            // ✅ QTE 중이면 보스 공격 시도 자체 차단
             if (blockBossAttackDuringCooldownOrQTE && boss.IsInQTE)
                 yield break;
 
-            // ✅ 공격권 없으면 보스는 공격 불가
             if (!ConsumeBossHitCredit())
                 yield break;
 
@@ -195,19 +192,28 @@ public class PlayerAttack : MonoBehaviour
 
             OnAttackOutStart?.Invoke();
 
+            // ✅ 이동 시작(공격 출발) 사운드
+            if (GameManager.Instance != null)
+                GameManager.Instance.PlayQuickSwooshSFX();
+
             Vector3 from = transform.position;
             yield return MovePlayerKeepingChain(from, bossPoint, flyOutDuration, bossPoint);
 
+            // ✅ 보스 타격(체력 감소) 사운드
+            if (GameManager.Instance != null)
+            {
+                // 보스 체력 감소 사운드
+            }
 
-
-
-            // ✅ 보스 HP 1 감소(공격권 1회 사용)
             boss.OnHitByAttack();
+
             if (useHitSlowMo)
                 yield return HitSlowMo(hitTimeScale, hitSlowMoDurationRealtime);
+
             AttackHookOff();
             ChainOff();
             OnAttackOutEnd?.Invoke();
+
             // 복귀
             OnAttackReturnStart?.Invoke();
 
@@ -223,7 +229,6 @@ public class PlayerAttack : MonoBehaviour
 
             OnAttackReturnEnd?.Invoke();
 
-
             if (playerCollider != null)
                 playerCollider.enabled = prevColliderEnabled;
 
@@ -233,6 +238,7 @@ public class PlayerAttack : MonoBehaviour
                 playerRb.linearVelocity = postReturnVelocity;
                 playerRb.angularVelocity = 0f;
             }
+
             boss.SetBarrierActive(true);
             PlayerActionLock.Unlock();
             isAttacking = false;
@@ -272,9 +278,17 @@ public class PlayerAttack : MonoBehaviour
         yield return ChainShootVisual(targetPoint, chainShootDuration);
 
         OnAttackOutStart?.Invoke();
+
+        // ✅ 이동 시작(공격 출발) 사운드
+        if (GameManager.Instance != null)
+            GameManager.Instance.PlayQuickSwooshSFX();
+
         Vector3 from2 = transform.position;
         yield return MovePlayerKeepingChain(from2, targetPoint, flyOutDuration, targetPoint);
 
+        // ✅ 적 파괴/피격 사운드(성공 시점)
+        if (GameManager.Instance != null)
+            GameManager.Instance.PlayBoomSFX();
 
         if (enemy != null) enemy.OnHitByAttack();
         else Destroy(hitCol.gameObject);
@@ -487,14 +501,16 @@ public class PlayerAttack : MonoBehaviour
         float angle = Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg;
         grappling.Hook.rotation = Quaternion.Euler(0f, 0f, angle + attackHookAngleOffset);
     }
+
     public bool HasBossHitCredit()
     {
         return bossHitCredit > 0;
     }
+
     private void PlaySFX(AudioClip clip)
     {
         if (clip == null) return;
-        if (SoundManager.instance == null) return;   // TitleScene에서 생성 안 됐으면 null 가능
-        SoundManager.instance.PlaySFX(clip);         // 네 SoundManager 함수 그대로 사용
+        if (SoundManager.instance == null) return;
+        SoundManager.instance.PlaySFX(clip);
     }
 }

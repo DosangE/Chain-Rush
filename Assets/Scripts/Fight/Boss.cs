@@ -112,6 +112,8 @@ public class Boss : MonoBehaviour, IAttackable
 
         if (hitsToDestroy <= 0 && destroyOnDefeat)
         {
+            if (GameManager.Instance != null)
+                GameManager.Instance.PlayBoomSFX();
             var mm = FindObjectOfType<MapManager>();
             if (mm != null)
             {

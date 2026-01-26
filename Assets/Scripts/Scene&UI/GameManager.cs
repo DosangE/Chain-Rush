@@ -28,6 +28,12 @@ public class GameManager : MonoBehaviour
     [Header("Scene Names")]
     [SerializeField] private string titleSceneName = "TitleScene";
 
+    [Header("SFX")]
+    [SerializeField] private AudioClip clickSFX;
+    [SerializeField] private AudioClip boomSFX;
+    [SerializeField] private AudioClip speedupSFX;
+    [SerializeField] private AudioClip s_swooshSFX;
+    [SerializeField] private AudioClip q_swooshSFX;
     // UI 클릭을 위해 필요 (없으면 자동 생성)
     private EventSystem eventSystem;
 
@@ -172,6 +178,19 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+    private void PlaySFX(AudioClip clip)
+    {
+        if (clip == null) return;
+        if (SoundManager.instance == null) return;   // TitleScene에서 생성 안 됐으면 null 가능
+        SoundManager.instance.PlaySFX(clip);         // 네 SoundManager 함수 그대로 사용
+    }
+
+    public void PlayClickSFX() => PlaySFX(clickSFX);
+    public void PlayBoomSFX() => PlaySFX(boomSFX);
+    public void PlaySpeedupSFX() => PlaySFX(speedupSFX);
+    public void PlaySwooshSFX() => PlaySFX(s_swooshSFX);
+    public void PlayQuickSwooshSFX() => PlaySFX(q_swooshSFX);
+
     public void ReturnToLobby()
     {
         Time.timeScale = 1f;

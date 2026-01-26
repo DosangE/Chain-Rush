@@ -1,28 +1,31 @@
 fileFormatVersion: 2
-guid: addaa554b97480c4795bca3a3cfadc08
+guid: dddf5e5948e32bc45955ff8312e33c26
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 113701762954793124
-    second: attackcircle_0
+      213: 649223268058989734
+    second: Button_0
   - first:
-      213: 8378924353440982826
-    second: attackcircle_1
+      213: -9000188618666376746
+    second: Button_1
   - first:
-      213: 2412628639591881815
-    second: attackcircle_2
+      213: 8467241744927558709
+    second: Button_2
   - first:
-      213: -4157068421357139580
-    second: attackcircle_3
+      213: 1566552715412073297
+    second: Button_3
   - first:
-      213: 2693670519019989153
-    second: attackcircle_4
+      213: -1257769187640015746
+    second: Button_4
   - first:
-      213: -1526686945206779443
-    second: attackcircle_5
+      213: -2574449355943416012
+    second: Button_5
   - first:
-      213: 6905819363289621276
-    second: attackcircle_6
+      213: 2527607607167286074
+    second: Button_6
+  - first:
+      213: -1727787259211401930
+    second: Button_7
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -64,12 +67,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 200
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -118,13 +121,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: attackcircle_0
+      name: Button_0
       rect:
         serializedVersion: 2
-        x: 143
-        y: 459
-        width: 14
-        height: 11
+        x: 11
+        y: 0
+        width: 1515
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -133,20 +136,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4a09147a623f39100800000000000000
-      internalID: 113701762954793124
+      spriteID: 6a403906f11820900800000000000000
+      internalID: 649223268058989734
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: attackcircle_1
+      name: Button_1
       rect:
         serializedVersion: 2
-        x: 23
-        y: 436
-        width: 10
-        height: 8
+        x: 509
+        y: 671
+        width: 516
+        height: 114
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -155,20 +158,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a2728b65e4be74470800000000000000
-      internalID: 8378924353440982826
+      spriteID: 6d180e8e228e81380800000000000000
+      internalID: -9000188618666376746
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: attackcircle_2
+      name: Button_2
       rect:
         serializedVersion: 2
-        x: 29
-        y: 14
-        width: 446
-        height: 430
+        x: 510
+        y: 429
+        width: 515
+        height: 100
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -177,20 +180,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 75cdecd07f06b7120800000000000000
-      internalID: 2412628639591881815
+      spriteID: 53c04c1718fa18570800000000000000
+      internalID: 8467241744927558709
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: attackcircle_3
+      name: Button_3
       rect:
         serializedVersion: 2
-        x: 179
-        y: 438
-        width: 19
-        height: 13
+        x: 510
+        y: 175
+        width: 380
+        height: 98
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -199,20 +202,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 489830ebb402f46c0800000000000000
-      internalID: -4157068421357139580
+      spriteID: 15b6f0c05638db510800000000000000
+      internalID: 1566552715412073297
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: attackcircle_4
+      name: Button_4
       rect:
         serializedVersion: 2
-        x: 335
-        y: 438
-        width: 13
-        height: 12
+        x: 511
+        y: 543
+        width: 514
+        height: 114
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -221,20 +224,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1a8e02cb017d16520800000000000000
-      internalID: 2693670519019989153
+      spriteID: e74094976918b8ee0800000000000000
+      internalID: -1257769187640015746
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: attackcircle_5
+      name: Button_5
       rect:
         serializedVersion: 2
-        x: 479
-        y: 261
-        width: 10
-        height: 27
+        x: 511
+        y: 319
+        width: 514
+        height: 98
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -243,20 +246,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: dc149b3ef4e10dae0800000000000000
-      internalID: -1526686945206779443
+      spriteID: 43f62c663f7b54cd0800000000000000
+      internalID: -2574449355943416012
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: attackcircle_6
+      name: Button_6
       rect:
         serializedVersion: 2
-        x: 473
-        y: 206
-        width: 12
-        height: 32
+        x: 911
+        y: 152
+        width: 162
+        height: 140
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -265,8 +268,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c1364ef4f1666df50800000000000000
-      internalID: 6905819363289621276
+      spriteID: a3bf7c41abdd31320800000000000000
+      internalID: 2527607607167286074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Button_7
+      rect:
+        serializedVersion: 2
+        x: 1067
+        y: 275
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 635324754aaa508e0800000000000000
+      internalID: -1727787259211401930
       vertices: []
       indices: 
       edges: []
@@ -275,7 +300,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -285,13 +310,14 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      attackcircle_0: 113701762954793124
-      attackcircle_1: 8378924353440982826
-      attackcircle_2: 2412628639591881815
-      attackcircle_3: -4157068421357139580
-      attackcircle_4: 2693670519019989153
-      attackcircle_5: -1526686945206779443
-      attackcircle_6: 6905819363289621276
+      Button_0: 649223268058989734
+      Button_1: -9000188618666376746
+      Button_2: 8467241744927558709
+      Button_3: 1566552715412073297
+      Button_4: -1257769187640015746
+      Button_5: -2574449355943416012
+      Button_6: 2527607607167286074
+      Button_7: -1727787259211401930
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
