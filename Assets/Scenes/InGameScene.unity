@@ -688,8 +688,6 @@ MonoBehaviour:
   showHookDuringAttack: 1
   attackHookAngleOffset: -90
   blockBossAttackDuringCooldownOrQTE: 1
-  returnInvincibleDuration: 0.5
-  damageReceiver: {fileID: 302225609}
 --- !u!114 &302225608
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -724,7 +722,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1280
   hitCooldown: 1
-  debugInvincibleLog: 0
   HitSFX: {fileID: 8300000, guid: ac162eaf84edc3c4dbfb155c38691677, type: 3}
 --- !u!1 &314154083
 GameObject:
@@ -1538,6 +1535,59 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1826548437}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &737598177
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 737598179}
+  - component: {fileID: 737598178}
+  m_Layer: 0
+  m_Name: AttackCursor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &737598178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 737598177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ef90c62c6669494bad79646a0d15507, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackableCursor: {fileID: 2800000, guid: a92ddc94b7443074491d383cb7121c44, type: 3}
+  hotspot: {x: 0, y: 0}
+  mode: 0
+  attackableMask:
+    serializedVersion: 2
+    m_Bits: 512
+  cursorHitRadius: 0
+  playerAttack: {fileID: 302225607}
+  blockDuringQTE: 0
+--- !u!4 &737598179
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 737598177}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 905.5, y: 597.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &775766190
@@ -4326,3 +4376,4 @@ SceneRoots:
   - {fileID: 1307917063}
   - {fileID: 722166904}
   - {fileID: 169097306}
+  - {fileID: 737598179}
