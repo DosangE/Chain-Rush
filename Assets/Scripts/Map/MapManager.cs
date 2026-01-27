@@ -149,6 +149,9 @@ public class MapManager : MonoBehaviour
     [SerializeField] private bool stopMapDuringBossEntrance = true;
 
     private Coroutine bossEntranceRoutine = null;
+    [Header("Hard Mode")]
+    [SerializeField] private bool endlessMode = false;
+
 
     void Start()
     {
@@ -639,7 +642,7 @@ public class MapManager : MonoBehaviour
 
         if (totalBossesToClear <= 0) totalBossesToClear = 1;
 
-        if (bossesDefeated >= totalBossesToClear)
+        if (!endlessMode && bossesDefeated >= totalBossesToClear)
         {
             TriggerGameClear(lastBossFocus);
             return;
@@ -755,6 +758,7 @@ public class MapManager : MonoBehaviour
             gameClearUI.SetActive(true);
 
         GameManager.Instance.PlayClearSFX();
+        HardModeSave.Unlock();
 
         if (stopTimeScaleOnClear)
             Time.timeScale = 0f;

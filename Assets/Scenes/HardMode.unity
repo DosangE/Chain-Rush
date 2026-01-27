@@ -603,11 +603,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20cf9b7921bd386409cbdc16ba7dcc37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentMapSpeed: 13
+  currentMapSpeed: 23
   baseMapSpeed: 13
   speedStages:
-  - 15
-  - 19
   - 23
   bgs:
   - {fileID: 1826548437}
@@ -618,29 +616,6 @@ MonoBehaviour:
   - stageName: 
     patterns:
     - {fileID: 4732367734404608031, guid: fdd95517eeafd8049b10fbe5fb96cbca, type: 3}
-    - {fileID: 881697438613463466, guid: 890b44b5c8e8dfd40b2a20369ce0ad65, type: 3}
-    - {fileID: 4732367734404608031, guid: 8db95e0abf1424f40ab907b9d79002eb, type: 3}
-    - {fileID: 4732367734404608031, guid: 8db95e0abf1424f40ab907b9d79002eb, type: 3}
-    - {fileID: 4732367734404608031, guid: e520cfdad6099244a94d28f111555bc9, type: 3}
-    - {fileID: 4732367734404608031, guid: e520cfdad6099244a94d28f111555bc9, type: 3}
-    - {fileID: 9198416098807941746, guid: 40bfdd62235567e40ba811d9f0783431, type: 3}
-    - {fileID: 4732367734404608031, guid: abdd4b21cc2861c4db411989155de250, type: 3}
-    - {fileID: 4732367734404608031, guid: 88a8af5afeb07a246b4094dcc8743594, type: 3}
-  - stageName: 
-    patterns:
-    - {fileID: 4732367734404608031, guid: fdd95517eeafd8049b10fbe5fb96cbca, type: 3}
-    - {fileID: 4732367734404608031, guid: e520cfdad6099244a94d28f111555bc9, type: 3}
-    - {fileID: 9198416098807941746, guid: 1070704301a4e6d47b4b0f4d980afa3f, type: 3}
-    - {fileID: 9198416098807941746, guid: 40bfdd62235567e40ba811d9f0783431, type: 3}
-    - {fileID: 9198416098807941746, guid: f6dd347578e6bb44b814a800df8975c0, type: 3}
-    - {fileID: 4732367734404608031, guid: abdd4b21cc2861c4db411989155de250, type: 3}
-    - {fileID: 4732367734404608031, guid: babd94f717a44ad4c8774f42f4b5e63d, type: 3}
-    - {fileID: 9198416098807941746, guid: a5603294d6b5b164bad66609da4f709e, type: 3}
-    - {fileID: 9198416098807941746, guid: a26ca4ae641a3f34a87ffd47f6d75ead, type: 3}
-    - {fileID: 4732367734404608031, guid: 3130519a240575a49acbbbab668d39cf, type: 3}
-    - {fileID: 4732367734404608031, guid: 42cc024a211b8d94abd9a17384cc195a, type: 3}
-  - stageName: 
-    patterns:
     - {fileID: 881697438613463466, guid: d69559d64e4916a47917f6eb57059fe1, type: 3}
     - {fileID: 9198416098807941746, guid: bd008c320e2b5e34e95e712c8dd36605, type: 3}
     - {fileID: 4732367734404608031, guid: e520cfdad6099244a94d28f111555bc9, type: 3}
@@ -651,8 +626,7 @@ MonoBehaviour:
     - {fileID: 9198416098807941746, guid: a5603294d6b5b164bad66609da4f709e, type: 3}
     - {fileID: 9198416098807941746, guid: a26ca4ae641a3f34a87ffd47f6d75ead, type: 3}
     - {fileID: 4732367734404608031, guid: 3130519a240575a49acbbbab668d39cf, type: 3}
-    - {fileID: 9198416098807941746, guid: 1c99dbd09b2c7a243bdb0c594d2f001f, type: 3}
-    - {fileID: 9198416098807941746, guid: 5609f0c4d6517ca479c0fb4bd0d9789f, type: 3}
+    - {fileID: 4732367734404608031, guid: 3130519a240575a49acbbbab668d39cf, type: 3}
   mapPatterns:
   - {fileID: 4732367734404608031, guid: fdd95517eeafd8049b10fbe5fb96cbca, type: 3}
   - {fileID: 881697438613463466, guid: 890b44b5c8e8dfd40b2a20369ce0ad65, type: 3}
@@ -671,9 +645,7 @@ MonoBehaviour:
   player: {fileID: 302225599}
   spawnDistanceAhead: 20
   bossPrefabs:
-  - {fileID: 2164078382629352759, guid: ae37098738aaf8543a40b892eaff270f, type: 3}
-  - {fileID: 2164078382629352759, guid: 7e103d6b383e37845b7161efcf6d4d17, type: 3}
-  - {fileID: 2164078382629352759, guid: ccf4486c78be78649b357b60b0661748, type: 3}
+  - {fileID: 2164078382629352759, guid: 2883cb15f9ee7754c8e11c2dffc763fd, type: 3}
   bossPos: {fileID: 666554977}
   chunksBeforeBoss: 3
   removedChunksBeforeQTE: 3
@@ -700,6 +672,7 @@ MonoBehaviour:
   bossEntranceDuration: 0.7
   bossEntranceOvershoot: 0.25
   stopMapDuringBossEntrance: 0
+  endlessMode: 1
 --- !u!1 &219859736
 GameObject:
   m_ObjectHideFlags: 0
@@ -1575,7 +1548,7 @@ MonoBehaviour:
   qteUI: {fileID: 2029198669}
   playerHealthUI: {fileID: 1859834747}
   clearUI: {fileID: 1507504269}
-  survivedTimeText: {fileID: 0}
+  survivedTimeText: {fileID: 1121030445}
   pausePopupCanvasGroup: {fileID: 0}
   titleSceneName: TitleScene
   clickSFX: {fileID: 8300000, guid: 2ac9d5fe36372c34395eda32fc44168f, type: 3}
@@ -2739,6 +2712,142 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1060685912}
+  m_CullTransparentMesh: 1
+--- !u!1 &1121030443
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1121030444}
+  - component: {fileID: 1121030446}
+  - component: {fileID: 1121030445}
+  m_Layer: 5
+  m_Name: SurvivedTime
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1121030444
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1121030443}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1761555071}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: -400}
+  m_SizeDelta: {x: 1500, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1121030445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1121030443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: New Text
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 83b793e69ce6bef4e9df9f41be320efc, type: 2}
+  m_sharedMaterial: {fileID: 4738957379526522120, guid: 83b793e69ce6bef4e9df9f41be320efc, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 100
+  m_fontSizeBase: 100
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 1
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &1121030446
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1121030443}
   m_CullTransparentMesh: 1
 --- !u!1 &1129132545
 GameObject:
@@ -4298,7 +4407,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1761555068
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4377,6 +4486,7 @@ RectTransform:
   - {fileID: 1360339554}
   - {fileID: 314154084}
   - {fileID: 1279400248}
+  - {fileID: 1121030444}
   m_Father: {fileID: 1307917063}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

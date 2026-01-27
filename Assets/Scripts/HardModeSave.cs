@@ -14,4 +14,18 @@ public static class HardModeSave
         PlayerPrefs.SetInt(HARD_UNLOCK_KEY, 1);
         PlayerPrefs.Save();
     }
+
+    // ✅ 테스트용: 다시 잠그기
+    public static void LockForTest()
+    {
+        PlayerPrefs.SetInt(HARD_UNLOCK_KEY, 0);
+        PlayerPrefs.Save();
+    }
+
+    // ✅ 테스트용: 키 자체 삭제(완전 초기상태)
+    public static void ResetForTest()
+    {
+        PlayerPrefs.DeleteKey(HARD_UNLOCK_KEY);
+        PlayerPrefs.Save();
+    }
 }

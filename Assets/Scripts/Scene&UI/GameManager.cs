@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
+using TMPro;
 
 public enum GameState { Playing, Paused, GameOver }
 
@@ -23,6 +24,10 @@ public class GameManager : MonoBehaviour
     public GameObject playerHealthUI;
     public GameObject clearUI;
 
+    [Header("GameOver - Survival Time UI")]
+    [Tooltip("GameOver UI 안의 TMP 텍스트를 연결. 예: 'Survived: 12.3s'")]
+    [SerializeField] private TMP_Text survivedTimeText;
+
     [Header("Pause Popup CanvasGroup (권장)")]
     [SerializeField] private CanvasGroup pausePopupCanvasGroup;
 
@@ -39,8 +44,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioClip wrongQTESFX;
     [SerializeField] private AudioClip clearSFX;
     [SerializeField] private AudioClip barrierSFX;
+
     // UI 클릭을 위해 필요 (없으면 자동 생성)
     private EventSystem eventSystem;
+
+    // ✅ 생존시간 측정(언스케일 시간)
+    private float runStartUnscaledTime = 0f;
 
     private void Awake()
     {
@@ -64,13 +73,19 @@ public class GameManager : MonoBehaviour
             es.AddComponent<StandaloneInputModule>();
             eventSystem = es.GetComponent<EventSystem>();
         }
+
         if (SoundManager.instance != null)
             SoundManager.instance.PlayBGM(SoundManager.instance.mainBGM);
+
         HideAllUI();
 
         // PausePopup에 CanvasGroup 안 달려있으면 자동으로 찾아보기 (선택)
         if (pausePopupCanvasGroup == null && pausePopupUI != null)
             pausePopupCanvasGroup = pausePopupUI.GetComponent<CanvasGroup>();
+
+        // ✅ “인게임 씬에 들어오자마자 게임이 시작”이라면 여기서 찍어도 됨
+        // (StartGame()을 실제로 호출하는 구조면 StartGame()에서 다시 초기화됨)
+        runStartUnscaledTime = Time.unscaledTime;
     }
 
     private void HideAllUI()
@@ -80,7 +95,12 @@ public class GameManager : MonoBehaviour
         if (gameOverUI != null) gameOverUI.SetActive(false);
         if (qteUI != null) qteUI.SetActive(false);
         if (clearUI != null) clearUI.SetActive(false);
+
+        // GameOver 텍스트도 숨김(있다면)
+        if (survivedTimeText != null)
+            survivedTimeText.gameObject.SetActive(false);
     }
+
     private void Update()
     {
         // if (State == GameState.Playing && Input.GetKeyDown(KeyCode.Escape))
@@ -103,9 +123,16 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
         State = GameState.Playing;
 
+        // ✅ 여기서 생존시간 시작(가장 정확)
+        runStartUnscaledTime = Time.unscaledTime;
+
         if (gameUI != null) gameUI.SetActive(true);
         if (pausePopupUI != null) pausePopupUI.SetActive(false);
         if (gameOverUI != null) gameOverUI.SetActive(false);
+
+        // 시작할 때 생존시간 텍스트 숨김
+        if (survivedTimeText != null)
+            survivedTimeText.gameObject.SetActive(false);
 
         ApplyPauseUIInteractivity(false);
     }
@@ -131,6 +158,14 @@ public class GameManager : MonoBehaviour
 
         State = GameState.GameOver;
 
+        // ✅ “클리어 없이 죽으면” 생존시간 표시
+        float survivedSeconds = Mathf.Max(0f, Time.unscaledTime - runStartUnscaledTime);
+        if (survivedTimeText != null)
+        {
+            survivedTimeText.gameObject.SetActive(true);
+            survivedTimeText.text = FormatSurvivalTime(survivedSeconds);
+        }
+
         if (gameOverUI != null) gameOverUI.SetActive(true);
         if (pausePopupUI != null) pausePopupUI.SetActive(false);
         if (qteUI != null) qteUI.SetActive(false);
@@ -148,6 +183,12 @@ public class GameManager : MonoBehaviour
             player.OnDeath();
 
         ApplyPauseUIInteractivity(false);
+    }
+
+    private string FormatSurvivalTime(float seconds)
+    {
+        // 원하면 mm:ss로도 바꿀 수 있음. 지금은 초 단위 소수 1자리.
+        return $"Survived: {seconds:0.0}s";
     }
 
     public void PauseGame()
@@ -193,6 +234,7 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
     public void OnGameClear()
     {
         // 하드모드 해금
@@ -201,6 +243,10 @@ public class GameManager : MonoBehaviour
         // 클리어 UI 표시
         if (clearUI != null)
             clearUI.SetActive(true);
+
+        // 클리어에서는 생존시간 텍스트 안 보이게(원칙적으로)
+        if (survivedTimeText != null)
+            survivedTimeText.gameObject.SetActive(false);
 
         PlayClearSFX();
 

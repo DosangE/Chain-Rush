@@ -19,6 +19,26 @@ public class LobbyManager : MonoBehaviour
     [Header("Hard Mode")]
     [SerializeField] private Button hardModeButton;
     [SerializeField] private string hardModeSceneName = "InGame_Hard";
+    private void Update()
+    {
+        // ✅ 테스트용: F10 누르면 하드모드 강제 활성화
+        if (Input.GetKeyDown(KeyCode.F10))
+        {
+            HardModeSave.Unlock();
+            Debug.Log("[TEST] HardMode UNLOCKED by F10");
+
+            RefreshHardModeButton(); // 즉시 UI 반영
+        }
+
+        // (선택) F9로 다시 잠그기
+        if (Input.GetKeyDown(KeyCode.F9))
+        {
+            HardModeSave.ResetForTest();
+            Debug.Log("[TEST] HardMode RESET by F9");
+
+            RefreshHardModeButton();
+        }
+    }
 
     private void Awake()
     {
@@ -61,8 +81,8 @@ public class LobbyManager : MonoBehaviour
         bool unlocked = HardModeSave.IsUnlocked();
         hardModeButton.gameObject.SetActive(unlocked);
     }
-    
-    private void OnClickHardMode()
+
+    public void OnClickHardMode()
     {
         SoundManager.instance.PlayClickSound();
         UnityEngine.SceneManagement.SceneManager.LoadScene(hardModeSceneName);
