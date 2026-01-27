@@ -124,6 +124,7 @@ public class BossQTE : MonoBehaviour
         {
             if (debugLog) Debug.Log($"[BossQTE] Wrong {pressed} expected {expected} -> reset");
             ResetProgressOnly();
+            GameManager.Instance.PlayWrongQTESFX();
             if (ui != null) ui.OnWrongReset(this);
         }
     }

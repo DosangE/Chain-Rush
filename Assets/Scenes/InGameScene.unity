@@ -614,9 +614,63 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   parallax: 0.1
+  stagePatternSets:
+  - stageName: 
+    patterns:
+    - {fileID: 4732367734404608031, guid: fdd95517eeafd8049b10fbe5fb96cbca, type: 3}
+    - {fileID: 881697438613463466, guid: 890b44b5c8e8dfd40b2a20369ce0ad65, type: 3}
+    - {fileID: 4732367734404608031, guid: 8db95e0abf1424f40ab907b9d79002eb, type: 3}
+    - {fileID: 4732367734404608031, guid: 8db95e0abf1424f40ab907b9d79002eb, type: 3}
+    - {fileID: 4732367734404608031, guid: e520cfdad6099244a94d28f111555bc9, type: 3}
+    - {fileID: 4732367734404608031, guid: e520cfdad6099244a94d28f111555bc9, type: 3}
+    - {fileID: 9198416098807941746, guid: 40bfdd62235567e40ba811d9f0783431, type: 3}
+    - {fileID: 4732367734404608031, guid: abdd4b21cc2861c4db411989155de250, type: 3}
+    - {fileID: 4732367734404608031, guid: 88a8af5afeb07a246b4094dcc8743594, type: 3}
+  - stageName: 
+    patterns:
+    - {fileID: 4732367734404608031, guid: fdd95517eeafd8049b10fbe5fb96cbca, type: 3}
+    - {fileID: 4732367734404608031, guid: e520cfdad6099244a94d28f111555bc9, type: 3}
+    - {fileID: 9198416098807941746, guid: 1070704301a4e6d47b4b0f4d980afa3f, type: 3}
+    - {fileID: 9198416098807941746, guid: 40bfdd62235567e40ba811d9f0783431, type: 3}
+    - {fileID: 9198416098807941746, guid: f6dd347578e6bb44b814a800df8975c0, type: 3}
+    - {fileID: 4732367734404608031, guid: abdd4b21cc2861c4db411989155de250, type: 3}
+    - {fileID: 4732367734404608031, guid: babd94f717a44ad4c8774f42f4b5e63d, type: 3}
+    - {fileID: 9198416098807941746, guid: a5603294d6b5b164bad66609da4f709e, type: 3}
+    - {fileID: 9198416098807941746, guid: a26ca4ae641a3f34a87ffd47f6d75ead, type: 3}
+    - {fileID: 4732367734404608031, guid: 3130519a240575a49acbbbab668d39cf, type: 3}
+    - {fileID: 4732367734404608031, guid: 42cc024a211b8d94abd9a17384cc195a, type: 3}
+  - stageName: 
+    patterns:
+    - {fileID: 881697438613463466, guid: d69559d64e4916a47917f6eb57059fe1, type: 3}
+    - {fileID: 9198416098807941746, guid: bd008c320e2b5e34e95e712c8dd36605, type: 3}
+    - {fileID: 4732367734404608031, guid: e520cfdad6099244a94d28f111555bc9, type: 3}
+    - {fileID: 9198416098807941746, guid: 1070704301a4e6d47b4b0f4d980afa3f, type: 3}
+    - {fileID: 9198416098807941746, guid: 40bfdd62235567e40ba811d9f0783431, type: 3}
+    - {fileID: 9198416098807941746, guid: f6dd347578e6bb44b814a800df8975c0, type: 3}
+    - {fileID: 4732367734404608031, guid: abdd4b21cc2861c4db411989155de250, type: 3}
+    - {fileID: 9198416098807941746, guid: a5603294d6b5b164bad66609da4f709e, type: 3}
+    - {fileID: 9198416098807941746, guid: a26ca4ae641a3f34a87ffd47f6d75ead, type: 3}
+    - {fileID: 4732367734404608031, guid: 3130519a240575a49acbbbab668d39cf, type: 3}
+    - {fileID: 9198416098807941746, guid: 1c99dbd09b2c7a243bdb0c594d2f001f, type: 3}
+    - {fileID: 9198416098807941746, guid: 5609f0c4d6517ca479c0fb4bd0d9789f, type: 3}
+  - stageName: 
+    patterns:
+    - {fileID: 881697438613463466, guid: d69559d64e4916a47917f6eb57059fe1, type: 3}
+    - {fileID: 9198416098807941746, guid: bd008c320e2b5e34e95e712c8dd36605, type: 3}
+    - {fileID: 4732367734404608031, guid: e520cfdad6099244a94d28f111555bc9, type: 3}
+    - {fileID: 9198416098807941746, guid: 1070704301a4e6d47b4b0f4d980afa3f, type: 3}
+    - {fileID: 9198416098807941746, guid: 40bfdd62235567e40ba811d9f0783431, type: 3}
+    - {fileID: 9198416098807941746, guid: f6dd347578e6bb44b814a800df8975c0, type: 3}
+    - {fileID: 4732367734404608031, guid: abdd4b21cc2861c4db411989155de250, type: 3}
+    - {fileID: 9198416098807941746, guid: a5603294d6b5b164bad66609da4f709e, type: 3}
+    - {fileID: 9198416098807941746, guid: a26ca4ae641a3f34a87ffd47f6d75ead, type: 3}
+    - {fileID: 4732367734404608031, guid: 3130519a240575a49acbbbab668d39cf, type: 3}
+    - {fileID: 4732367734404608031, guid: 42cc024a211b8d94abd9a17384cc195a, type: 3}
+    - {fileID: 4732367734404608031, guid: 42cc024a211b8d94abd9a17384cc195a, type: 3}
   mapPatterns:
   - {fileID: 4732367734404608031, guid: fdd95517eeafd8049b10fbe5fb96cbca, type: 3}
   - {fileID: 881697438613463466, guid: 890b44b5c8e8dfd40b2a20369ce0ad65, type: 3}
+  - {fileID: 881697438613463466, guid: d69559d64e4916a47917f6eb57059fe1, type: 3}
   - {fileID: 4732367734404608031, guid: 8db95e0abf1424f40ab907b9d79002eb, type: 3}
   - {fileID: 4732367734404608031, guid: e520cfdad6099244a94d28f111555bc9, type: 3}
   - {fileID: 9198416098807941746, guid: 1070704301a4e6d47b4b0f4d980afa3f, type: 3}
@@ -625,6 +679,8 @@ MonoBehaviour:
   - {fileID: 4732367734404608031, guid: babd94f717a44ad4c8774f42f4b5e63d, type: 3}
   - {fileID: 9198416098807941746, guid: a5603294d6b5b164bad66609da4f709e, type: 3}
   - {fileID: 9198416098807941746, guid: bd008c320e2b5e34e95e712c8dd36605, type: 3}
+  - {fileID: 9198416098807941746, guid: 1c99dbd09b2c7a243bdb0c594d2f001f, type: 3}
+  - {fileID: 9198416098807941746, guid: 5609f0c4d6517ca479c0fb4bd0d9789f, type: 3}
   maxChunks: 3
   player: {fileID: 302225599}
   spawnDistanceAhead: 20
@@ -633,7 +689,7 @@ MonoBehaviour:
   - {fileID: 2164078382629352759, guid: 7e103d6b383e37845b7161efcf6d4d17, type: 3}
   - {fileID: 2164078382629352759, guid: ccf4486c78be78649b357b60b0661748, type: 3}
   bossPos: {fileID: 666554977}
-  chunksBeforeBoss: 3
+  chunksBeforeBoss: 2
   removedChunksBeforeQTE: 3
   qteOnlyOnceAfterBossSpawn: 0
   debugBossAndChunk: 0
@@ -653,6 +709,11 @@ MonoBehaviour:
   screenFader: {fileID: 750054392}
   fadeOutDuration: 0.6
   holdAfterFade: 0.15
+  playBossEntrance: 1
+  bossEntranceStartYOffset: 10
+  bossEntranceDuration: 0.7
+  bossEntranceOvershoot: 0.25
+  stopMapDuringBossEntrance: 0
 --- !u!1 &219859736
 GameObject:
   m_ObjectHideFlags: 0
@@ -901,11 +962,11 @@ MonoBehaviour:
   leftClickCooldownAfterGrapple: 0.05
   jumpHeightMultiplier: 0.75
   jumpGravityMultiplier: 1.6
-  maxFallSpeed: 12
+  maxFallSpeed: 13
   chainEndBackOffset: 0.15
   hookAngleOffset: -90
   jumpSFX: {fileID: 8300000, guid: 508bce997b7ca984ea1bf5f963db79a2, type: 3}
-  grappleAttachSFX: {fileID: 8300000, guid: ad24a03c9666db5489c1e9c5a0661642, type: 3}
+  grappleAttachSFX: {fileID: 8300000, guid: 360319ee775052d479177f13ab032e2f, type: 3}
 --- !u!114 &302225607
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1536,6 +1597,9 @@ MonoBehaviour:
   s_swooshSFX: {fileID: 8300000, guid: 85070cc7552294f4fbdea41ab1933364, type: 3}
   q_swooshSFX: {fileID: 8300000, guid: be4458c6bd4d4f146be077ad5aca7348, type: 3}
   bossHitSFX: {fileID: 8300000, guid: 79bae38ea70f6d0429f454787b0ffda1, type: 3}
+  wrongQTESFX: {fileID: 8300000, guid: 627ff19472bfdbc4d9d9fe2a4066a1e1, type: 3}
+  clearSFX: {fileID: 8300000, guid: f8b0e7bd419149f42bb0fb4b21c44435, type: 3}
+  barrierSFX: {fileID: 8300000, guid: 6f963116bd1efd345939f8303b132479, type: 3}
 --- !u!1 &612420565
 GameObject:
   m_ObjectHideFlags: 0

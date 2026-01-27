@@ -154,6 +154,7 @@ public class Boss : MonoBehaviour, IAttackable
 
     public void SetBarrierActive(bool active)
     {
+        GameManager.Instance.PlayBarrierSFX();
         if (barrierRoot == null) return;
         if (barrierRoot.activeSelf == active) return;
         barrierRoot.SetActive(active);

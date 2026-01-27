@@ -16,6 +16,10 @@ public class LobbyManager : MonoBehaviour
 
     [Header("Settings Close Button")]
     [SerializeField] private Button settingsCloseButton;
+    [Header("Hard Mode")]
+    [SerializeField] private Button hardModeButton;
+    [SerializeField] private string hardModeSceneName = "InGame_Hard";
+
     private void Awake()
     {
         if (howToPopup == null || htpButton == null || settingsPopup == null || settingsButton == null || settingsCloseButton == null)
@@ -27,7 +31,11 @@ public class LobbyManager : MonoBehaviour
         if (settingsCloseButton != null) settingsCloseButton.onClick.AddListener(Close);
         htpButton.onClick.AddListener(OnClickHowToPlay);
         settingsButton.onClick.AddListener(OnClickSettings);
+
+        if (hardModeButton != null)
+            hardModeButton.onClick.AddListener(OnClickHardMode);
     }
+
 
     private void OnClickHowToPlay()
     {
@@ -40,6 +48,26 @@ public class LobbyManager : MonoBehaviour
         settingsPopup.gameObject.SetActive(true);
         SoundManager.instance.PlayClickSound();
     }
+
+    private void OnEnable()
+    {
+        RefreshHardModeButton();
+    }
+
+    private void RefreshHardModeButton()
+    {
+        if (hardModeButton == null) return;
+
+        bool unlocked = HardModeSave.IsUnlocked();
+        hardModeButton.gameObject.SetActive(unlocked);
+    }
+    
+    private void OnClickHardMode()
+    {
+        SoundManager.instance.PlayClickSound();
+        UnityEngine.SceneManagement.SceneManager.LoadScene(hardModeSceneName);
+    }
+
     public void Close()
     {
         settingsPopup.gameObject.SetActive(false);

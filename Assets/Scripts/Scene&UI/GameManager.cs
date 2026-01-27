@@ -36,6 +36,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioClip s_swooshSFX;
     [SerializeField] private AudioClip q_swooshSFX;
     [SerializeField] private AudioClip bossHitSFX;
+    [SerializeField] private AudioClip wrongQTESFX;
+    [SerializeField] private AudioClip clearSFX;
+    [SerializeField] private AudioClip barrierSFX;
     // UI 클릭을 위해 필요 (없으면 자동 생성)
     private EventSystem eventSystem;
 
@@ -190,6 +193,20 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+    public void OnGameClear()
+    {
+        // 하드모드 해금
+        HardModeSave.Unlock();
+
+        // 클리어 UI 표시
+        if (clearUI != null)
+            clearUI.SetActive(true);
+
+        PlayClearSFX();
+
+        Time.timeScale = 0f;
+    }
+
     private void PlaySFX(AudioClip clip)
     {
         if (clip == null) return;
@@ -203,6 +220,9 @@ public class GameManager : MonoBehaviour
     public void PlaySwooshSFX() => PlaySFX(s_swooshSFX);
     public void PlayQuickSwooshSFX() => PlaySFX(q_swooshSFX);
     public void PlayBossHitSFX() => PlaySFX(bossHitSFX);
+    public void PlayWrongQTESFX() => PlaySFX(wrongQTESFX);
+    public void PlayClearSFX() => PlaySFX(clearSFX);
+    public void PlayBarrierSFX() => PlaySFX(barrierSFX);
 
     public void ReturnToLobby()
     {
