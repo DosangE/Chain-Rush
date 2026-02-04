@@ -120,9 +120,9 @@ MonoBehaviour:
   extraRoots:
   - {fileID: 626991568512584760}
   gapEpsilon: 0.02
-  baseSpeed: 15
+  baseSpeed: 13
   maxSpeed: 23
-  addPerGap_AtMaxSpeed: 4
+  addPerGap_AtMaxSpeed: 3
   preferColliderBounds: 1
 --- !u!1 &1342099492682536013
 GameObject:

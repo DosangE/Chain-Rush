@@ -1336,9 +1336,9 @@ MonoBehaviour:
   extraRoots:
   - {fileID: 5685755580614173191}
   gapEpsilon: 0.02
-  baseSpeed: 15
+  baseSpeed: 13
   maxSpeed: 23
-  addPerGap_AtMaxSpeed: 4
+  addPerGap_AtMaxSpeed: 3
   preferColliderBounds: 1
 --- !u!1001 &608188269814187649
 PrefabInstance:

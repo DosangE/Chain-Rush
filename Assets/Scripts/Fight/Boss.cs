@@ -26,12 +26,23 @@ public class Boss : MonoBehaviour, IAttackable
     private bool _qteRunning;
     private float _nextAttackTime;
 
+    // ✅ 최대 HP 보관 + 외부 접근용
+    private int _maxHits;
+    public int CurrentHp => hitsToDestroy;
+    public int MaxHp => _maxHits;
+
+    // ✅ UI 캐시
+    private BossHPFlashUI _hpFlashUI;
+
     public bool IsInQTE => _qteRunning;
     public bool CanStartAttempt =>
         !_qteRunning && Time.time >= _nextAttackTime && hitsToDestroy > 0;
 
     private void Awake()
     {
+        // ✅ 최대 HP 저장 (프리팹에 입력된 초기값 기준)
+        _maxHits = hitsToDestroy;
+
         if (qte == null)
             qte = GetComponentInChildren<BossQTE>(true);
 
@@ -45,8 +56,20 @@ public class Boss : MonoBehaviour, IAttackable
             if (t != null) barrierRoot = t.gameObject;
         }
 
+        // ✅ 보스 HP 점멸 UI 찾기(씬에 1개 두는 방식)
+        _hpFlashUI = FindObjectOfType<BossHPFlashUI>(true);
+
         // 기본 상태: 배리어 ON
         SetBarrierActive(true);
+    }
+    
+    private void Start()
+    {
+        // 보스 등장 시 체력 한번 표시
+        if (_hpFlashUI != null && hitsToDestroy > 0)
+        {
+            _hpFlashUI.ShowOnSpawn(hitsToDestroy, _maxHits);
+        }
     }
 
     public bool TryStartAttackAttempt()
@@ -118,6 +141,12 @@ public class Boss : MonoBehaviour, IAttackable
 
         hitsToDestroy--;
 
+        // ✅ 피격 시: 남은 보스 체력을 특정 UI 위치에 1초 점멸 표시
+        if (_hpFlashUI != null && hitsToDestroy > 0)
+        {
+            _hpFlashUI.Show(hitsToDestroy, _maxHits);
+        }
+
         if (hitsToDestroy <= 0 && destroyOnDefeat)
         {
             if (GameManager.Instance != null)
@@ -129,8 +158,6 @@ public class Boss : MonoBehaviour, IAttackable
             var mm = FindObjectOfType<MapManager>();
             if (mm != null)
             {
-                // ✅ 여기서 mm.AdvanceSpeedStage()는 더 이상 호출하지 않음.
-                // 스테이지/SpeedUp 연출은 MapManager.OnBossDefeated() 내부에서 처리하도록 변경됨.
                 mm.OnBossDefeated();
 
                 var ph = FindObjectOfType<PlayerHealth>();
@@ -147,8 +174,6 @@ public class Boss : MonoBehaviour, IAttackable
         if (defeatParticle == null) return;
 
         ParticleSystem ps = Instantiate(defeatParticle, transform.position, Quaternion.identity);
-
-        // 파티클 끝나면 자동 제거 (StopAction=Destroy면 이 줄 없어도 됨)
         Destroy(ps.gameObject, ps.main.duration + ps.main.startLifetime.constantMax);
     }
 

@@ -609,7 +609,6 @@ public class MapManager : MonoBehaviour
 
         currentSpeedStage = targetStage;
         currentMapSpeed = speedStages[currentSpeedStage];
-        baseMapSpeed = currentMapSpeed;
 
         if (playFx)
         {

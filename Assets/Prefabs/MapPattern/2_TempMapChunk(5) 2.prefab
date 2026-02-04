@@ -363,7 +363,7 @@ Transform:
   m_GameObject: {fileID: 2112795000726721189}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.300003, y: 0, z: 0}
+  m_LocalPosition: {x: -12.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -788,9 +788,9 @@ MonoBehaviour:
   extraRoots:
   - {fileID: 7382862116229619155}
   gapEpsilon: 0.02
-  baseSpeed: 15
+  baseSpeed: 13
   maxSpeed: 23
-  addPerGap_AtMaxSpeed: 4
+  addPerGap_AtMaxSpeed: 3
   preferColliderBounds: 1
 --- !u!1001 &4723005324028799186
 PrefabInstance:

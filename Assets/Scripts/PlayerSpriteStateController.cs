@@ -18,25 +18,27 @@ public class PlayerSpriteStateController : MonoBehaviour
     [SerializeField] private Sprite grappleSprite;
 
     [Header("Attack Out (fly to target)")]
-    [Tooltip("AttackOut도 프레임으로 돌리고 싶으면 여기에 넣어라. 비워두면 attackOutSprite(단일) 사용.")]
     [SerializeField] private Sprite[] attackOutFrames;
-    [Tooltip("AttackOut 한 프레임당 시간(초). 예: 0.06f")]
     [SerializeField] private float attackOutFrameTime = 0.06f;
     [SerializeField] private Sprite attackOutSprite;
 
     [Header("Attack Return (come back)")]
-    [Tooltip("AttackReturn 한 프레임당 시간(초). 예: 0.06f")]
     [SerializeField] private float attackReturnFrameTime = 0.06f;
 
     [Header("Jump Frames")]
-    [Tooltip("점프를 프레임(예: 11장)으로 돌리고 싶으면 여기에 넣어라. 비워두면 아래 Jump Up/Down 또는 jumpSprite 사용.")]
-    [SerializeField] private Sprite[] jumpFrames;   // 11장
+    [SerializeField] private Sprite[] jumpFrames;
     [SerializeField] private float jumpFrameTime = 0.06f;
 
-    [Header("Optional: Jump Up/Down (jumpFrames 비었을 때만 사용)")]
+    [Header("Optional: Jump Up/Down")]
     [SerializeField] private Sprite jumpUpSprite;
     [SerializeField] private Sprite jumpDownSprite;
     [SerializeField] private float jumpUpDownThreshold = 0.05f;
+
+    // ✅ 점프에서만 쓰는 오프셋
+    [Header("Jump Only Offset")]
+    [SerializeField] private Vector2 jumpOnlyOffset = Vector2.zero;
+
+    private Vector3 spriteOriginalLocalPos;
 
     private VisualState currentState = VisualState.Run;
 
@@ -48,6 +50,9 @@ public class PlayerSpriteStateController : MonoBehaviour
 
     private Coroutine jumpCo;
     private bool isJumpAnimating = false;
+
+    // ✅ 이번 프레임 최종적으로 적용할 오프셋 여부 (LateUpdate에서만 실제 적용)
+    private bool wantsJumpOffsetThisFrame = false;
 
     private void Reset()
     {
@@ -63,6 +68,8 @@ public class PlayerSpriteStateController : MonoBehaviour
         if (playerAttack == null) playerAttack = GetComponentInParent<PlayerAttack>();
         if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
         if (runAnimator == null) runAnimator = GetComponent<PlayerSpriteAnimator>();
+
+        spriteOriginalLocalPos = spriteRenderer.transform.localPosition;
     }
 
     private void OnEnable()
@@ -89,11 +96,16 @@ public class PlayerSpriteStateController : MonoBehaviour
         StopJumpAnimation();
         if (outCo != null) { StopCoroutine(outCo); outCo = null; }
         if (returnCo != null) { StopCoroutine(returnCo); returnCo = null; }
+
+        ResetSpriteOffset();
     }
 
     private void Update()
     {
         if (grappling == null || spriteRenderer == null) return;
+
+        // ✅ 매 프레임 기본값: 오프셋 안 씀 (LateUpdate에서 이 값으로 결정)
+        wantsJumpOffsetThisFrame = false;
 
         // ✅ 최우선: 공격 연출 (Return > Out)
         if (isAttackReturn)
@@ -109,31 +121,33 @@ public class PlayerSpriteStateController : MonoBehaviour
             return;
         }
 
-        bool isAttach = grappling.IsAttach;
-        bool isHookActive = grappling.IsHookActive;
         bool isGrounded = grappling.IsGrounded;
 
-        bool isGrapplingAny = (isHookActive || isAttach);
-
-        // ✅ 핵심: 공중이면(점프든 그래플링이든) Jump 비주얼을 쓴다.
         if (!isGrounded)
         {
-            // jumpFrames가 있으면 점프 프레임 코루틴을 돌린다 (그래플링 중에도 유지)
+            // jumpFrames 있으면 코루틴
             if (!isJumpAnimating && jumpFrames != null && jumpFrames.Length > 0)
                 StartJumpAnimation();
 
             ApplyState(VisualState.Jump);
+
+            // ✅ 점프일 때만 오프셋 요청
+            wantsJumpOffsetThisFrame = true;
         }
         else
         {
             StopJumpAnimation();
             ApplyState(VisualState.Run);
         }
+    }
 
-        // 참고:
-        // grappleSprite를 "특정 조건에서만" 쓰고 싶다면 여기서 예외 처리하면 됨.
-        // 예: isAttach일 때만 grappleSprite를 강제로 쓰고 싶다 -> ApplyState(Jump) 대신 Grapple로 보내거나,
-        // ApplyState(Jump) 후 spriteRenderer.sprite만 overwrite 하는 식으로.
+    private void LateUpdate()
+    {
+        // ✅ 스프라이트 변경이 모두 끝난 뒤 최종적으로 위치만 결정
+        if (wantsJumpOffsetThisFrame)
+            ApplyJumpOnlyOffset();
+        else
+            ResetSpriteOffset();
     }
 
     private void HandleAttackOutStart()
@@ -168,7 +182,6 @@ public class PlayerSpriteStateController : MonoBehaviour
 
         StopJumpAnimation();
 
-        // (네 기존 코드 유지) Return도 attackOutFrames로 루프
         if (attackOutFrames != null && attackOutFrames.Length > 0)
         {
             if (returnCo != null) StopCoroutine(returnCo);
@@ -215,7 +228,6 @@ public class PlayerSpriteStateController : MonoBehaviour
                 break;
 
             case VisualState.Jump:
-                // jumpFrames가 있으면 코루틴이 관리
                 if (jumpFrames == null || jumpFrames.Length == 0)
                     SetJumpSprite();
                 break;
@@ -337,5 +349,16 @@ public class PlayerSpriteStateController : MonoBehaviour
             idx = (idx + 1) % jumpFrames.Length;
             yield return new WaitForSeconds(frameTime);
         }
+    }
+
+    private void ApplyJumpOnlyOffset()
+    {
+        spriteRenderer.transform.localPosition =
+            spriteOriginalLocalPos + (Vector3)jumpOnlyOffset;
+    }
+
+    private void ResetSpriteOffset()
+    {
+        spriteRenderer.transform.localPosition = spriteOriginalLocalPos;
     }
 }

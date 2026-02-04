@@ -7,7 +7,7 @@ public class PlayerSpriteAnimator : MonoBehaviour
     [SerializeField] private Sprite[] sprites = new Sprite[15];
 
     [Header("Animation Settings")]
-    [SerializeField] private float frameTime = 0.1f; // 한 프레임당 시간 (초)
+    [SerializeField] private float frameTime = 0.1f;
 
     private SpriteRenderer spriteRenderer;
     private int currentIndex = 0;
@@ -16,6 +16,15 @@ public class PlayerSpriteAnimator : MonoBehaviour
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+    private void OnEnable()
+    {
+        timer = 0f;
+        currentIndex = 0;
+
+        if (sprites != null && sprites.Length > 0)
+            spriteRenderer.sprite = sprites[currentIndex]; // ✅ 첫 프레임 즉시 세팅
     }
 
     private void Update()

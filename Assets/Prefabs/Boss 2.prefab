@@ -122,7 +122,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   keyPool: 71000000770000006500000072000000
   patternLength: 10
-  totalTimeLimit: 8
+  totalTimeLimit: 7
   perKeyTimeLimit: 0
   ui: {fileID: 0}
   debugLog: 0

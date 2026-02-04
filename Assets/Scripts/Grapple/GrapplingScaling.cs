@@ -17,7 +17,7 @@ public class GrapplingScaling : MonoBehaviour
         float speedRatio = g.MapManager.currentMapSpeed / g.MapManager.baseMapSpeed;
 
         // 점프/낙하감 압축용 중력 스케일
-        g.Rb.gravityScale = g.BaseGravity * Mathf.Pow(speedRatio, 0.60f);
+        g.Rb.gravityScale = g.BaseGravity * Mathf.Pow(speedRatio, 0.20f);
 
         // 그래플 발사(시각/체감 템포)
         g.HookSpeed = g.BaseHookSpeed;
