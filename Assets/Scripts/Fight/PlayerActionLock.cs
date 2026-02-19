@@ -6,4 +6,9 @@ public class PlayerActionLock : MonoBehaviour
 
     public static void Lock() => IsLocked = true;
     public static void Unlock() => IsLocked = false;
+    public static void ForceUnlock()
+    {
+        IsLocked = false;
+    }
+
 }

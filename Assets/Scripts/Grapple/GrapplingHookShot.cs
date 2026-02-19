@@ -13,11 +13,11 @@ public class GrapplingHookShot : MonoBehaviour
 
     // 붙는 순간 접선 속도가 너무 작으면 최소 이 속도는 확보
     [SerializeField] private float minTangentialSpeed = 2.0f;
-
     public void Init(Grappling owner)
     {
         g = owner;
     }
+
 
     public void StartHookShot()
     {
@@ -94,7 +94,7 @@ public class GrapplingHookShot : MonoBehaviour
             g.IsAttach = true;
             g.IsHookActive = false;
             g.Hook.position = hit.point;
-            
+
             if (GameManager.Instance != null)
                 GameManager.Instance.PlaySwooshSFX();
             // ====== (2) 붙는 즉시 스윙 속도 정리 ======

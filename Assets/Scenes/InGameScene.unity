@@ -703,6 +703,10 @@ MonoBehaviour:
   bossEntranceOvershoot: 0.25
   stopMapDuringBossEntrance: 0
   endlessMode: 0
+  tutorialOverrideEnabled: 0
+  tutorialAllowBossSpawn: 1
+  tutorialForceSpeed: 0
+  tutorialForcedMapSpeed: 15
 --- !u!1 &219859736
 GameObject:
   m_ObjectHideFlags: 0

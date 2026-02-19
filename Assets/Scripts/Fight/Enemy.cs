@@ -8,6 +8,7 @@ public class Enemy : MonoBehaviour, IAttackable
 
     public void OnHitByAttack()
     {
+        FindObjectOfType<TutorialFlow>()?.ReportEnemyHit();
         PlayDestroyParticle();
         Destroy(gameObject);
     }

@@ -13,6 +13,12 @@ public class UIChanger : MonoBehaviour
         SceneManager.LoadScene("InGameScene");
     }
 
+    public void OnClickTutorial()
+    {
+        SoundManager.instance.PlayClickSound();
+        SceneManager.LoadScene("TutorialScene");
+    }
+
     public void OnClickQuit()
     {
         SoundManager.instance.PlayClickSound();

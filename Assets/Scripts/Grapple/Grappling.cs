@@ -72,7 +72,7 @@ public class Grappling : MonoBehaviour
     [SerializeField] private AudioClip jumpSFX;
     [SerializeField] private AudioClip grappleAttachSFX;
 
-
+    private TutorialFlow tutorialFlow;
     private bool pendingLeftClick = false;
 
     private bool isDead = false;
@@ -184,6 +184,8 @@ public class Grappling : MonoBehaviour
         scaling.Init(this);
         physicsComp.Init(this);
         hookShot.Init(this);
+        if (tutorialFlow == null)
+            tutorialFlow = FindObjectOfType<TutorialFlow>(); // 튜토 씬에만 있으면 됨
     }
 
     void Start()
@@ -217,6 +219,7 @@ public class Grappling : MonoBehaviour
     void Update()
     {
         if (isDead) return;
+        if (TutorialFlow.IsInputLocked) return;
 
         // ✅ 잠금 중에도 GetKeyDown을 "저장"만 해둔다 (유실 방지)
         if (Input.GetKeyDown(KeyCode.Mouse0))
@@ -296,6 +299,7 @@ public class Grappling : MonoBehaviour
                 BeginLeftClickCooldown();
             }
 
+            tutorialFlow?.ReportGrappleSuccess();
             ReleaseGrapple();
             ReturnHook();
             return;
@@ -346,6 +350,8 @@ public class Grappling : MonoBehaviour
 
         if (isHookActive && !isAttach)
         {
+            Debug.Log($"[INPUT] lock={TutorialFlow.IsInputLocked}, timeScale={Time.timeScale}, gm={(GameManager.Instance != null ? GameManager.Instance.State.ToString() : "null")}");
+
             if (isLineMax || isGrounded) ReturnHook();
             else ShootHook();
         }

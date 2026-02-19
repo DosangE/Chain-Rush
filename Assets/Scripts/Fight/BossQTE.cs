@@ -55,6 +55,14 @@ public class BossQTE : MonoBehaviour
 
     public void Begin()
     {
+        Debug.Log($"timeScale={Time.timeScale}, lock={TutorialFlow.IsInputLocked}");
+
+        Debug.Log("QTE Begin");
+        if (TutorialFlow.IsInputLocked)
+        {
+            Debug.Log("QTE blocked by lock");
+        }
+
         WasSuccess = false;
         IsRunning = true;
 

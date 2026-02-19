@@ -62,7 +62,7 @@ public class Boss : MonoBehaviour, IAttackable
         // 기본 상태: 배리어 ON
         SetBarrierActive(true);
     }
-    
+
     private void Start()
     {
         // 보스 등장 시 체력 한번 표시
@@ -108,6 +108,8 @@ public class Boss : MonoBehaviour, IAttackable
             // ✅ QTE 성공 = 취약 상태 진입 -> 배리어 OFF
             SetBarrierActive(false);
 
+            FindObjectOfType<TutorialFlow>()?.ReportBossQteSuccess();
+
             var pa = FindObjectOfType<PlayerAttack>();
             if (pa != null) pa.GrantBossHitCredit(1);
         }
@@ -140,6 +142,7 @@ public class Boss : MonoBehaviour, IAttackable
         if (hitsToDestroy <= 0) return;
 
         hitsToDestroy--;
+        FindObjectOfType<TutorialFlow>()?.ReportBossHitAfterQte();
 
         // ✅ 피격 시: 남은 보스 체력을 특정 UI 위치에 1초 점멸 표시
         if (_hpFlashUI != null && hitsToDestroy > 0)

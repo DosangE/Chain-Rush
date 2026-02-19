@@ -115,6 +115,8 @@ public class PlayerAttack : MonoBehaviour
 
     private void Update()
     {
+        if (TutorialFlow.IsInputLocked) return;
+
         if (PlayerActionLock.IsLocked) return;
         if (GameManager.Instance != null && GameManager.Instance.IsInputLocked)
             return;

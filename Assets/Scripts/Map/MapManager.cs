@@ -152,6 +152,21 @@ public class MapManager : MonoBehaviour
     [Header("Hard Mode")]
     [SerializeField] private bool endlessMode = false;
 
+    // =========================
+    // Tutorial Override
+    // =========================
+    [Header("Tutorial Override")]
+    [SerializeField] private bool tutorialOverrideEnabled = false;
+
+    // 튜토 단계에서 "이 프리팹들만" 나오게 하는 풀
+    private readonly List<GameObject> tutorialOverridePatterns = new List<GameObject>();
+
+    // 튜토 단계에서 보스 스폰 자체를 막고 싶을 때
+    [SerializeField] private bool tutorialAllowBossSpawn = true;
+
+    // 튜토 단계에서 speed stage를 쓰지 않고 고정 속도를 쓰고 싶을 때
+    [SerializeField] private bool tutorialForceSpeed = false;
+    [SerializeField] private float tutorialForcedMapSpeed = 15f;
 
     void Start()
     {
@@ -327,6 +342,8 @@ public class MapManager : MonoBehaviour
     // =========================================================
     private List<GameObject> GetCurrentStagePatterns()
     {
+        if (tutorialOverrideEnabled && tutorialOverridePatterns.Count > 0)
+            return tutorialOverridePatterns;
         int stageIndex = Mathf.Clamp(bossesDefeated, 0, 9999);
 
         if (stagePatternSets != null && stagePatternSets.Length > 0)
@@ -482,6 +499,8 @@ public class MapManager : MonoBehaviour
     private void TrySpawnBossIfReady()
     {
         if (bossSpawned) return;
+
+        if (tutorialOverrideEnabled && !tutorialAllowBossSpawn) return;
 
         if ((spawnedChunkCount - spawnedChunkCountAtStageStart) < chunksBeforeBoss)
             return;
@@ -826,6 +845,73 @@ public class MapManager : MonoBehaviour
             currentMapSpeed = prevSpeed;
 
         bossEntranceRoutine = null;
+    }
+    // =========================
+    // Tutorial API
+    // =========================
+    public void Tutorial_SetOnlyPatterns(List<GameObject> onlyThese, bool allowBossSpawn)
+    {
+        tutorialOverrideEnabled = true;
+        tutorialAllowBossSpawn = allowBossSpawn;
+
+        tutorialOverridePatterns.Clear();
+        if (onlyThese != null) tutorialOverridePatterns.AddRange(onlyThese);
+
+    }
+
+    public void Tutorial_ClearOverride()
+    {
+        tutorialOverrideEnabled = false;
+        tutorialOverridePatterns.Clear();
+    }
+
+    public void Tutorial_ForceMapSpeed(float speed)
+    {
+        tutorialForceSpeed = true;
+        tutorialForcedMapSpeed = speed;
+        currentMapSpeed = speed; // 즉시 반영
+    }
+
+    public void Tutorial_DisableForcedSpeed()
+    {
+        tutorialForceSpeed = false;
+    }
+
+    // ✅ 단계 시작 시 “현재 떠있는 청크들 + 추적큐”까지 싹 비우고 초기 1개 다시 깔기
+    private void Tutorial_ResetChunksAndRespawn()
+    {
+        // 1) 기존 청크 제거
+        while (chunks.Count > 0)
+        {
+            var c = chunks.Dequeue();
+            if (c != null) Destroy(c);
+        }
+
+        // 2) 패턴 추적 자료구조 비우기
+        chunkPatternPrefabs.Clear();
+        activePatternPrefabs.Clear();
+
+        // 3) endPoint 초기화
+        lastEndPoint = null;
+
+        // 4) 보스 관련 상태도 단계마다 리셋(보스 단계가 아니면 특히 중요)
+        bossSpawned = false;
+        if (spawnedBossObj != null) Destroy(spawnedBossObj);
+        spawnedBossObj = null;
+        spawnedBoss = null;
+
+        // 5) 청크 카운터는 “이 단계에서 다시 재는 게” 튜토에 유리
+        spawnedChunkCount = 0;
+        spawnedChunkCountAtStageStart = 0;
+
+        removedChunkCountTotal = 0;
+        removedChunkCountAtBossSpawn = 0;
+        removedChunkCountAtLastQTE = 0;
+        qteTriggeredOnce = false;
+        waitUntilBossHitConsumed = false;
+
+        // 6) 초기 청크 다시
+        SpawnInitialChunk();
     }
 
 }
