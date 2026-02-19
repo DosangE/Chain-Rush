@@ -1024,7 +1024,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   maxGrappleDistance: 8.5
-  minGrappleDistance: 1
+  minGrappleDistance: 0.5
   hookSpeed: 50
   visualOffset: 0.05
   chainOriginLocalOffset: {x: 1, y: 0.7}
