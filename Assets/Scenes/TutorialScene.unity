@@ -2902,7 +2902,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ef90c62c6669494bad79646a0d15507, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackableCursor: {fileID: 2800000, guid: a92ddc94b7443074491d383cb7121c44, type: 3}
+  attackableCursor: {fileID: 2800000, guid: 6d68df3907cc6e8419a0efc1c956f4af, type: 3}
   hotspot: {x: 0, y: 0}
   mode: 0
   attackableMask:

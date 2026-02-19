@@ -626,6 +626,8 @@ MonoBehaviour:
     - {fileID: 9198416098807941746, guid: 40bfdd62235567e40ba811d9f0783431, type: 3}
     - {fileID: 4732367734404608031, guid: abdd4b21cc2861c4db411989155de250, type: 3}
     - {fileID: 4732367734404608031, guid: 88a8af5afeb07a246b4094dcc8743594, type: 3}
+    - {fileID: 881697438613463466, guid: 890b44b5c8e8dfd40b2a20369ce0ad65, type: 3}
+    - {fileID: 881697438613463466, guid: 44cba28fd09ab5848a8e7da294c9d157, type: 3}
   - stageName: 
     patterns:
     - {fileID: 4732367734404608031, guid: fdd95517eeafd8049b10fbe5fb96cbca, type: 3}
@@ -640,6 +642,10 @@ MonoBehaviour:
     - {fileID: 4732367734404608031, guid: 3130519a240575a49acbbbab668d39cf, type: 3}
     - {fileID: 4732367734404608031, guid: 42cc024a211b8d94abd9a17384cc195a, type: 3}
     - {fileID: 9198416098807941746, guid: 40bfdd62235567e40ba811d9f0783431, type: 3}
+    - {fileID: 881697438613463466, guid: 890b44b5c8e8dfd40b2a20369ce0ad65, type: 3}
+    - {fileID: 881697438613463466, guid: 44cba28fd09ab5848a8e7da294c9d157, type: 3}
+    - {fileID: 9198416098807941746, guid: 187297cd5b589484bb78f1eaab1bb215, type: 3}
+    - {fileID: 4732367734404608031, guid: 42cc024a211b8d94abd9a17384cc195a, type: 3}
   - stageName: 
     patterns:
     - {fileID: 881697438613463466, guid: d69559d64e4916a47917f6eb57059fe1, type: 3}
@@ -655,6 +661,10 @@ MonoBehaviour:
     - {fileID: 9198416098807941746, guid: 1c99dbd09b2c7a243bdb0c594d2f001f, type: 3}
     - {fileID: 9198416098807941746, guid: 5609f0c4d6517ca479c0fb4bd0d9789f, type: 3}
     - {fileID: 9198416098807941746, guid: 40bfdd62235567e40ba811d9f0783431, type: 3}
+    - {fileID: 881697438613463466, guid: 890b44b5c8e8dfd40b2a20369ce0ad65, type: 3}
+    - {fileID: 881697438613463466, guid: 44cba28fd09ab5848a8e7da294c9d157, type: 3}
+    - {fileID: 9198416098807941746, guid: 187297cd5b589484bb78f1eaab1bb215, type: 3}
+    - {fileID: 4732367734404608031, guid: 42cc024a211b8d94abd9a17384cc195a, type: 3}
   mapPatterns:
   - {fileID: 4732367734404608031, guid: fdd95517eeafd8049b10fbe5fb96cbca, type: 3}
   - {fileID: 881697438613463466, guid: 890b44b5c8e8dfd40b2a20369ce0ad65, type: 3}
@@ -2063,7 +2073,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ef90c62c6669494bad79646a0d15507, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackableCursor: {fileID: 2800000, guid: a92ddc94b7443074491d383cb7121c44, type: 3}
+  attackableCursor: {fileID: 2800000, guid: 6d68df3907cc6e8419a0efc1c956f4af, type: 3}
   hotspot: {x: 0, y: 0}
   mode: 0
   attackableMask:
